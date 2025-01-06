@@ -1,0 +1,9 @@
+py-4: Elemanın üst ve alt kısmına 1rem (16px) kadar dikey boşluk (padding) ekler.
+flex: Elemanı flex düzenine sokar, yani esnek kutu modelini aktif eder.
+items-center: Flex konteynerinin çocuklarını (elemanlarını) çapraz eksende (satır için dikey, sütun için yatay) merkeze hizalar.
+flex-col: Flex düzeninin yönünü sütun (dikey) olarak değiştirir.
+justify-center: Elemanları ana eksende (bu durumda dikey olarak) merkeze hizalar.
+gap-2: Flex elemanları arasına 0.5rem (8px) boşluk ekler.
+px-4: Elemanın sol ve sağ tarafına 1rem (16px) kadar yatay boşluk (padding) ekler.
+text-[#211E1F]: Yazı rengini özel bir hexadecimal renk değeri olan #211E1F (çok koyu gri) olarak ayarlar.
+max-w-[1280px]: Elemanın maksimum genişliğini 1280px olarak ayarlar.
