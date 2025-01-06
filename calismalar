@@ -262,4 +262,152 @@ fill="white": Dikdörtgenin içi beyaz renkle doldurulur ve clipPath işlemi iç
 Bu clipPath, başka bir öğeye uygulanarak sadece belirli bir alanın görünür olmasını sağlar.
 
 
+<input
+  type="text"
+  [(ngModel)]="value" <!--to data binding-->
+  (input)="reset($event)"
+  [disabled]="disabled"
+  [ngModelOptions]="{ standalone: true }"
+  class="border-transparent focus:border-transparent focus:!ring-0 focus:outline-none w-full text-[#6E6E6E] h-[42px] bg-transparent"
+  [placeholder]="placeholder"
+/>
+1. type="text":
+type="text", input elemanının türünü belirtir. Burada, kullanıcıdan metin girmesini bekleyen bir metin kutusu (text input) oluşturulur.
+2. [(ngModel)]="value":
+[(ngModel)]: Bu, Angular'ın "two-way data binding" (iki yönlü veri bağlama) özelliğini kullanır. Yani, input elemanındaki değeri Angular bileşenindeki value değişkenine bağlar ve her iki yönlü veri akışını sağlar.
+value: Bu, bileşendeki bir değişkendir ve [(ngModel)] ile bu değerin input kutusunda yansımasını sağlar. Yani, input kutusundaki metin her değiştiğinde, value değişkeni de güncellenir ve tersi de geçerlidir; eğer value güncellenirse, input kutusunda da otomatik olarak görünür.
+3. (input)="reset($event)":
+(input): Bu, Angular'da bir olay bağlamadır ve input olayı, kullanıcı input kutusuna her şey yazdığında tetiklenir. Yani, inputa her veri girişi yapıldığında bu olay çağrılır.
+reset($event): Bu, reset adında bir metodu tetikler ve olayın (event) verisini $event olarak gönderir. Bu metodun içinde, inputtaki her değişiklikle ilgili işlemler yapılabilir. Örneğin, bu fonksiyon, input kutusunun içeriğini sıfırlamak veya başka bir işlem yapmak için kullanılabilir.
+4. [disabled]="disabled":
+[disabled]: Bu, input kutusunun aktif olup olmamasını kontrol eder. Eğer disabled değişkeni true ise, input kutusu devre dışı (disabled) hale gelir ve kullanıcı yazı yazamaz. Eğer false ise, input kutusu normal şekilde çalışır.
+disabled: Bu, bileşendeki bir boolean değişkendir ve input elemanının devre dışı olup olmama durumunu kontrol eder.
+5. [ngModelOptions]="{ standalone: true }":
+[ngModelOptions]="{ standalone: true }": Bu, ngModel için bir seçenek belirler. standalone: true, ngModel'i form grubu dışında bağımsız bir model olarak kullanmak için kullanılır. Yani, bu input elemanı, Angular formu içinde yer almasa da bağımsız bir model olarak çalışır. Bu, form olmayan, bağımsız inputlar için kullanışlıdır.
+6. class="...":
+Bu, input elemanına özel CSS sınıflarını tanımlar. Verilen sınıflar şu şekilde açıklanabilir:
+border-transparent: Kenarlık rengini saydam (şeffaf) yapar.
+focus:border-transparent: Input kutusuna odaklanıldığında kenarlık rengini saydam yapar.
+focus:!ring-0: Input kutusuna odaklandığında dış çizgiyi kaldırır.
+focus:outline-none: Focus (odak) durumunda dış çizgi (outline) eklemez.
+w-full: Input kutusunun genişliğini tam (full) yapar.
+text-[#6E6E6E]: Metin rengini belirli bir gri tonuna ayarlar (#6E6E6E).
+h-[42px]: Input kutusunun yüksekliğini 42 piksel olarak ayarlar.
+bg-transparent: Input kutusunun arka plan rengini saydam yapar.
+7. [placeholder]="placeholder":
+[placeholder]: Bu özellik, input kutusunun yer tutucu (placeholder) metnini ayarlamak için kullanılır.
+placeholder: Bu, bileşendeki bir değişkendir ve input kutusunda yazılı olmayan, kullanıcıya ne tür bir veri girmesi gerektiğini belirten bir metni tutar. Bu metin, input kutusu boşken görünür ve kullanıcı bir şey yazmaya başladığında kaybolur.
+<rect x="4" y="4" width="48" height="48" rx="24" fill="#FEE4E2" />
+x="4" y="4":
 
+Bu özellikler, dikdörtgenin sol üst köşesinin (x, y) koordinatlarını belirtir.
+x="4": Dikdörtgenin yatayda (x ekseninde) 4 birim mesafede başlamasını sağlar.
+y="4": Dikdörtgenin dikeyde (y ekseninde) 4 birim mesafede başlamasını sağlar.
+width="48" height="48":
+
+width="48": Dikdörtgenin genişliğini 48 birim olarak ayarlar.
+height="48": Dikdörtgenin yüksekliğini 48 birim olarak ayarlar.
+rx="24":
+
+rx="24": Bu özellik, dikdörtgenin köşelerinin yuvarlatılmasını sağlar. Bu durumda, her bir köşe 24 birim yarıçapında yuvarlatılır, yani dikdörtgenin köşeleri dairesel olur.
+fill="#FEE4E2":
+
+fill özniteliği, dikdörtgenin iç rengini belirtir. Burada, #FEE4E2 kodu, çok açık bir pembe rengini ifade eder. Bu renk, dikdörtgenin içini doldurur.
+İkinci <rect> Elemanı:
+html
+Kodu kopyala
+<rect
+  x="4"
+  y="4"
+  width="48"
+  height="48"
+  rx="24"
+  stroke="#FEF3F2"
+  stroke-width="8"
+/>
+x="4" y="4":
+
+İlk dikdörtgen gibi, bu dikdörtgen de aynı (4, 4) koordinatından başlar.
+width="48" height="48":
+
+Bu dikdörtgenin de boyutları 48x48 birimdir.
+rx="24":
+
+Bu dikdörtgen de aynı şekilde, köşeleri 24 birim yarıçapında yuvarlatılmıştır.
+stroke="#FEF3F2":
+
+stroke özniteliği, dikdörtgenin dış çizgisinin rengini belirler. Burada, #FEF3F2 kodu, açık bir pembe rengini ifade eder. Yani dikdörtgenin dış kenarları bu renk ile çizilecektir.
+stroke-width="8":
+
+stroke-width özniteliği, dikdörtgenin dış kenarının kalınlığını belirler. Burada, kenarın kalınlığı 8 birim olarak ayarlanmıştır.
+Özet:
+İlk dikdörtgen: 48x48 birim boyutlarında, yuvarlatılmış köşelere sahip bir dikdörtgen olup içi #FEE4E2 (açık pembe) rengiyle doldurulmuş.
+İkinci dikdörtgen: Aynı boyutlara ve yuvarlatılmış köşelere sahip olmasına rağmen dış kenarı #FEF3F2 (daha açık pembe) renginde ve dış kenar kalınlığı 8 birimdir.
+Bu iki dikdörtgen, genellikle iki katmanlı bir efekt yaratmak için kullanılır. Birincisi arka planda dolgulu bir şekil oluştururken, ikincisi bu şeklin kenarını çizmek için kullanılır. Bu tür tasarımlar, genellikle düğme veya simge tasarımlarında yaygındır.<rect x="4" y="4" width="48" height="48" rx="24" fill="#FEE4E2" />
+x="4" y="4":
+
+Bu özellikler, dikdörtgenin sol üst köşesinin (x, y) koordinatlarını belirtir.
+x="4": Dikdörtgenin yatayda (x ekseninde) 4 birim mesafede başlamasını sağlar.
+y="4": Dikdörtgenin dikeyde (y ekseninde) 4 birim mesafede başlamasını sağlar.
+width="48" height="48":
+
+width="48": Dikdörtgenin genişliğini 48 birim olarak ayarlar.
+height="48": Dikdörtgenin yüksekliğini 48 birim olarak ayarlar.
+rx="24":
+
+rx="24": Bu özellik, dikdörtgenin köşelerinin yuvarlatılmasını sağlar. Bu durumda, her bir köşe 24 birim yarıçapında yuvarlatılır, yani dikdörtgenin köşeleri dairesel olur.
+fill="#FEE4E2":
+
+fill özniteliği, dikdörtgenin iç rengini belirtir. Burada, #FEE4E2 kodu, çok açık bir pembe rengini ifade eder. Bu renk, dikdörtgenin içini doldurur.
+İkinci <rect> Elemanı:
+html
+Kodu kopyala
+<rect
+  x="4"
+  y="4"
+  width="48"
+  height="48"
+  rx="24"
+  stroke="#FEF3F2"
+  stroke-width="8"
+/>
+x="4" y="4":
+
+İlk dikdörtgen gibi, bu dikdörtgen de aynı (4, 4) koordinatından başlar.
+width="48" height="48":
+
+Bu dikdörtgenin de boyutları 48x48 birimdir.
+rx="24":
+
+Bu dikdörtgen de aynı şekilde, köşeleri 24 birim yarıçapında yuvarlatılmıştır.
+stroke="#FEF3F2":
+
+stroke özniteliği, dikdörtgenin dış çizgisinin rengini belirler. Burada, #FEF3F2 kodu, açık bir pembe rengini ifade eder. Yani dikdörtgenin dış kenarları bu renk ile çizilecektir.
+stroke-width="8":
+
+stroke-width özniteliği, dikdörtgenin dış kenarının kalınlığını belirler. Burada, kenarın kalınlığı 8 birim olarak ayarlanmıştır.
+Özet:
+İlk dikdörtgen: 48x48 birim boyutlarında, yuvarlatılmış köşelere sahip bir dikdörtgen olup içi #FEE4E2 (açık pembe) rengiyle doldurulmuş.
+İkinci dikdörtgen: Aynı boyutlara ve yuvarlatılmış köşelere sahip olmasına rağmen dış kenarı #FEF3F2 (daha açık pembe) renginde ve dış kenar kalınlığı 8 birimdir.
+Bu iki dikdörtgen, genellikle iki katmanlı bir efekt yaratmak için kullanılır. Birincisi arka planda dolgulu bir şekil oluştururken, ikincisi bu şeklin kenarını çizmek için kullanılır. Bu tür tasarımlar, genellikle düğme veya simge tasarımlarında yaygındır.
+
+1. if (isPlatformBrowser(this._platformId)) { ... }
+isPlatformBrowser(this._platformId): Bu kontrol, Angular'ın platform-dependent code (platforma bağlı kod) çalıştırma yöntemidir. Angular, farklı platformlarda çalışabilecek şekilde tasarlanmıştır (örneğin, web tarayıcıları ve sunucu tarafı). Bu kontrol, şu anki ortamın tarayıcıda olup olmadığını kontrol eder.
+this._platformId: PLATFORM_ID servisi, Angular'a ait bir servis olup, uygulamanın çalıştığı platformu temsil eder. Bu, tarayıcı, sunucu veya başka bir ortam olabilir.
+isPlatformBrowser: Angular'da, bir bileşenin yalnızca tarayıcıda çalışmasını sağlamak için bu fonksiyon kullanılır. Sunucu tarafında çalışırken tarayıcıya özgü kodlar çalıştırmamak için bu kontrol yapılır. Eğer uygulama tarayıcıda çalışıyorsa, kodun içi çalıştırılır.
+2. this.subscriptions.add(this.memberService.member.subscribe((member: any) => { ... }))
+Bu satır, observable bir veriyi subscribe (abone) eder ve bu veriye dayalı bir işlem yapar.
+this.memberService.member: Burada memberService adında bir servis üzerinden gelen member observable'ına abone olunuyor. Bu observable, bir üyelik bilgisi gibi kullanıcıya dair bilgileri sağlayabilir.
+subscribe((member: any) => { ... }): memberService.member observable'ına abone olunur ve her veri alındığında (member değiştiğinde) this.user = member ifadesi çalışır. Yani, member verisi geldiğinde, this.user adlı bileşen değişkenine atanır.
+3. this.subscriptions.add(this.languageService.sectionData.subscribe((_: string) => { ... }))
+this.languageService.sectionData: Bu, languageService adlı bir servisin sectionData observable'ıdır. Bu observable, uygulamanın dil veya içerik verisini sağlayabilir.
+subscribe((_: string) => { ... }): Bu observable'a abone olunuyor. Burada _ kullanılarak, gelen parametreyi kullanmadığımızı belirtiyoruz. Yani, sadece verinin geldiği anı bekliyoruz, ancak bu veriyi bir değişkende tutmuyoruz. Gelen veri bir string türünde olacak şekilde belirtilmiş.
+this.section = this.languageService.getSection("homepage");: section değişkenine, languageService servisi aracılığıyla alınan "homepage" başlıklı dil verisi atanıyor. Bu, uygulamanın anasayfasına ait verileri temsil edebilir.
+this.applicationSection = this.languageService.getSection("newApplication");: applicationSection değişkenine, aynı şekilde "newApplication" başlıklı başka bir dil verisi atanıyor. Bu, uygulamanın yeni başvuru sayfasına ait verileri olabilir.
+4. this.subscriptions.add(...)
+Her iki abone olma işlemi de this.subscriptions koleksiyonuna ekleniyor. Bu, genellikle aboneliklerin düzgün bir şekilde temizlenebilmesi için yapılır. Angular bileşenlerinde abonelikler, bileşen yok olduğunda ngOnDestroy metodu ile temizlenmelidir. this.subscriptions.add(...) ile yapılan her bir abonelik, bileşenin yok edilmesi sırasında temizlenmesi için takip edilir.
+Özet:
+isPlatformBrowser(this._platformId): Kodu yalnızca tarayıcıda çalıştırmak için kullanılır.
+this.subscriptions.add(...): Bileşenin yaşam döngüsü boyunca yapılan abonelikler takip edilir.
+this.memberService.member.subscribe(...): Kullanıcı üyelik bilgileri ile ilgili değişiklikleri takip eder ve this.user değişkenine atar.
+this.languageService.sectionData.subscribe(...): Dil veya içerik verilerini takip eder ve this.section ve this.applicationSection değişkenlerini günceller.
