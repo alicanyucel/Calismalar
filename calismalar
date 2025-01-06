@@ -220,7 +220,46 @@ xmlns="http://www.w3.org/2000/svg":
 
 Bu, SVG formatının doğru bir şekilde tanımlanabilmesi için gereken XML ad alanı bildirimi. Her SVG öğesinin bu XML ad alanına sahip olması gereklidir, böylece tarayıcılar SVG öğesinin doğru şekilde işleyebilir.
 
+@Output() Dekoratörü:
+@Output() dekoratörü, bileşenlerin dış dünyaya (diğer bileşenlere) olay (event) yaymalarını sağlar.
+Bu, genellikle bir child (alt) bileşenin parent (üst) bileşene veri göndermek için kullanılır. Yani, bir alt bileşende meydana gelen bir değişiklik, üst bileşene iletilmek için bir olayla yayılabilir.
+visibleChange = new EventEmitter<boolean>();:
+Bu, visibleChange adında bir EventEmitter nesnesi oluşturur. EventEmitter, Angular'da olayları yaymak için kullanılan bir sınıftır.
+<boolean> tipi, bu olayın veri türünü belirtir. Yani, visibleChange olayı bir boolean (doğru/yanlış) değeri taşır. Bu olay, bir boolean değeri taşıyarak tetiklenebilir.
+new EventEmitter<boolean>(): Bu, EventEmitter'ı başlatır ve bu olayın boolean türünde veri ile gönderileceğini belirtir. Başka bir deyişle, bu olay, bir true/false değeri ile yayımlanacaktır.
+<clipPath id="clip0_1936_18016">
+  <rect width="24" height="24" fill="white" transform="translate(16 16)" />
+</clipPath>
+<clipPath>:
+<clipPath> elemanı, bir clip (kesme) yolu tanımlar. İçine yerleştirilen şekil, o şekli kullanarak diğer SVG öğelerinin görünürlüğünü sınırlar.
+id="clip0_1936_18016": id özniteliği, bu clipPath öğesine benzersiz bir kimlik verir. Diğer öğeler bu kimlik ile bu clipPath'i kullanabilir. Yani, bu clipPath'in kimliği clip0_1936_18016 olarak tanımlanmıştır.
+İçerideki <rect> Elemanı:
+html
+Kodu kopyala
+<rect width="24" height="24" fill="white" transform="translate(16 16)" />
+<rect>:
 
+<rect>, SVG içindeki dikdörtgeni tanımlar. Bu örnekte, <rect> elemanı, <clipPath> elemanının içinde yer alır ve bu dikdörtgenin şekli, clipPath ile belirtilen "kesme" işlemini tanımlar.
+width="24" ve height="24":
+
+Bu özellikler, dikdörtgenin genişliğini ve yüksekliğini belirtir. Burada, dikdörtgenin boyutları 24x24 birim olarak belirlenmiştir.
+fill="white":
+
+fill özniteliği, dikdörtgenin iç rengini belirtir. Burada, dikdörtgenin içi beyaz renkte doldurulmuştur. ClipPath öğesinde bu rengin özellikle önemli bir anlamı vardır, çünkü clipPath'teki şekil beyaz olarak doldurulduğunda, genellikle kesme işlemi için boş bir alan yaratır.
+transform="translate(16 16)":
+
+Bu, dikdörtgeni x ve y eksenlerinde 16 birim kaydırarak taşıma işlemi yapar. Bu, dikdörtgenin yerini (konumunu) değiştirir ve (16, 16) koordinatına taşır. Bu, dikdörtgenin başlangıç noktasının 16, 16 olacağı anlamına gelir. Yani dikdörtgenin konumu bu noktaya kaydırılır.
+ClipPath'in Kullanımı:
+Bu clipPath öğesi, 24x24 birimlik bir dikdörtgen oluşturur ve bu dikdörtgeni (16, 16) koordinatına yerleştirir. Şekil beyaz renk ile doldurulur, bu da clipPath'i uyguladığınızda o alanın görünür olduğu ve gerisinin kesildiği anlamına gelir.
+
+Bu clipPath, başka SVG öğelerine uygulandığında, o öğenin sadece bu dikdörtgenin içine yerleştirilen kısmı görünür hale gelir. Yani, clipPath'i bir nesneye uyguladığınızda, yalnızca (16, 16) konumundaki 24x24 birimlik dikdörtgen alanı gösterilir, geri kalan kısımlar kesilir.
+
+Özet:
+<clipPath>: SVG öğelerinin görünürlüğünü sınırlandıran bir "kesme" yolu tanımlar.
+<rect>: ClipPath içinde kullanılan şekil, burada 24x24 bir dikdörtgen.
+transform="translate(16 16)": Dikdörtgeni 16, 16 konumuna kaydırır.
+fill="white": Dikdörtgenin içi beyaz renkle doldurulur ve clipPath işlemi için gerekli alan oluşturulur.
+Bu clipPath, başka bir öğeye uygulanarak sadece belirli bir alanın görünür olmasını sağlar.
 
 
 
