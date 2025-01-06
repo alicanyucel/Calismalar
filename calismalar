@@ -7,3 +7,220 @@ gap-2: Flex elemanları arasına 0.5rem (8px) boşluk ekler.
 px-4: Elemanın sol ve sağ tarafına 1rem (16px) kadar yatay boşluk (padding) ekler.
 text-[#211E1F]: Yazı rengini özel bir hexadecimal renk değeri olan #211E1F (çok koyu gri) olarak ayarlar.
 max-w-[1280px]: Elemanın maksimum genişliğini 1280px olarak ayarlar.
+justify-center: Flex konteynerindeki elemanları ana eksende (bu durumda yatayda) merkeze hizalar.
+gap-2: Flex elemanları arasına 0.5rem (8px) boşluk ekler.
+px-4: Elemanın sol ve sağ tarafına 1rem (16px) yatay boşluk (padding) ekle
+type="text": Bu, input alanının tipinin metin olduğunu belirtir.
+[(ngModel)]="currentValue": Angular’ın two-way data binding özelliğini kullanarak, bu input alanındaki değeri currentValue değişkeniyle bağlar. Kullanıcı input'a bir değer girdiğinde, currentValue değişir ve tersi de geçerlidir.
+mwlFlatpickr: Bu, Flatpickr kütüphanesini entegre eden bir Angular direktifidir. Bu direktif, input alanına bir tarih seçici işlevi ekler.
+[locale]="locale": locale (yerelleştirme) ayarlarını input elemanına bağlar. Tarih formatı, dil, vb. yerelleştirilmiş özellikler burada belirlenir.
+dateFormat="d.m.Y": Tarih formatını gün.ay.yıl (örneğin, 06.01.2025) şeklinde ayarlar.
+[disableMobile]="true": Bu özellik, mobil cihazlarda tarih seçici popup'ını devre dışı bırakır. Mobil tarayıcıda, tarih seçiciyi açmaz.
+(change)="reset()": Kullanıcı input alanında bir değişiklik yaptığında, reset() fonksiyonunu tetikler. Bu genellikle, input değerini sıfırlamak veya başka bir işlem yapmak için kullanılır.
+[allowInput]="true": Kullanıcının tarihi elle girmesine izin verir. Bu özellik etkinse, kullanıcı tarih değerini manuel olarak da yazabilir.
+[minDate]="minDate": Minimum tarih değerini ayarlar. minDate burada bir değişken olup, seçilebilecek en erken tarihi belirler.
+[maxDate]="maxDate": Maksimum tarih değerini ayarlar. maxDate burada bir değişken olup, seçilebilecek en geç tarihi belirler.
+[convertModelValue]="true": Modeldeki değerin doğru biçime dönüştürülmesini sağlar. Bu, tarih formatlama ve dönüştürme işlevi için kullanılır.
+[ngModelOptions]="{ standalone: true }": Bu, ngModel'in standalone (bağımsız) olarak kullanılmasını sağlar, yani form elemanının dışında bağımsız bir şekilde çalışmasına izin verir.
+class="border-transparent focus:border-transparent focus:!ring-0 focus:outline-none w-full text-[#6E6E6E] h-[50px] bg-transparent":
+border-transparent: Border'ı şeffaf yapar.
+focus:border-transparent: Input odaklandığında border'ı şeffaf yapar.
+focus:!ring-0: Odaklandığında herhangi bir "ring" (çevre çizgisi) eklenmesini engeller.
+focus:outline-none: Odaklandığında outline'ı kaldırır.
+w-full: Input alanının genişliğini %100 yapar.
+text-[#6E6E6E]: Yazı rengini #6E6E6E (gri) yapar.
+h-[50px]: Input alanının yüksekliğini 50px yapar.
+bg-transparent: Arka plan rengini şeffaf yapar.
+[placeholder]="section.placeholder": Placeholder (yer tutucu) metnini section.placeholder değerine bağlar. Bu, input alanında herhangi bir değer girilmeden önce görünecek olan metni belirtir.
+
+Bu <path> elementi, SVG (Scalable Vector Graphics) formatında bir çizim komutudur ve genellikle bir şekil veya simge çizmek için kullanılır. Her bir özelliğin anlamını aşağıda açıklıyorum:
+
+d Özelliği:
+<path> elementinin en önemli özelliğidir ve çizilecek yolu (yani şekli) belirtir. Bu değer, bir dizi komut ve koordinattan oluşur. Burada, yol komutları şunlardır:
+
+M: "Move To" komutu, bir başlangıç noktasına taşır (bu örnekte M6.71277 6.7226 ile başlar).
+C: "Cubic Bezier Curve" komutu, 3 nokta kullanarak bir bezier eğrisi çizer (örneğin, C3.66479 8.79527 2 12 2 12).
+L: "Line To" komutu, bir çizgi çizer.
+Z: Yolun kapanması için kullanılan komut (yolun başlangıcına geri dönmek için).
+Bu komutlar, şeklin her bir segmentini tanımlar.
+
+stroke Özelliği:
+stroke="currentColor": Bu özellik, çizimin rengini ayarlamak için kullanılır. Burada currentColor kullanılmış, bu da stroke renginin, elemanın mevcut metin rengini alacağı anlamına gelir. Eğer SVG'nin içine yerleştirildiği HTML öğesinde bir renk belirlenmişse, bu renk çizimde kullanılacaktır.
+
+stroke-width Özelliği:
+stroke-width="2": Çizginin kalınlığını belirler. Burada değer 2 olarak ayarlanmış, yani çizgi kalınlığı 2 birim olacak.
+
+stroke-linecap Özelliği:
+stroke-linecap="round": Çizginin uçlarının nasıl görüneceğini belirler. round değeri, çizginin uçlarının yuvarlatılmış olacağı anlamına gelir.
+
+stroke-linejoin Özelliği:
+stroke-linejoin="round": Çizgilerin birleşim noktalarının nasıl görüneceğini belirler. round değeri, çizgilerin birleşim noktalarını yuvarlatır.
+<ng-select> Elementi:
+class="w-[200px]": Bu özellik, seçim kutusunun genişliğini 200 piksel olarak ayarlar. Bu, CSS sınıfıdır ve burada Tailwind CSS kullanılarak genişlik belirlenmiştir.
+[clearable]="false": Bu, seçim kutusunun kullanıcı tarafından temizlenmesini engeller. Yani, kullanıcı bir seçim yaptıktan sonra kutunun içeriğini sıfırlamak mümkün olmaz.
+[searchable]="true": Bu, seçim kutusunun arama yapılabilir olmasını sağlar. Kullanıcılar, seçenekler arasında arama yaparak daha hızlı seçim yapabilir.
+[(ngModel)]="countryGuid": Two-way data binding özelliğiyle, seçim kutusundaki değeri Angular bileşenindeki countryGuid değişkenine bağlar. Kullanıcı bir seçenek seçtiğinde, countryGuid değişir; tersi de geçerlidir.
+(change)="updateCountryCode($event)": Bu, seçim kutusunda bir değişiklik yapıldığında (yani bir ülke seçildiğinde), updateCountryCode($event) fonksiyonunun tetiklenmesini sağlar. Bu fonksiyon, seçilen ülkenin kodunu almak veya güncellemek için kullanılır.
+[ngModelOptions]="{ standalone: true }": Bu, ngModel'in standalone (bağımsız) olarak kullanılmasını sağlar. Bu, bileşenin bir form elemanı gibi davranmamasını ve bağımsız olarak veri bağlama işlemi yapmasını sağlar.
+[placeholder]="getInput('phoneCodePlaceholder')": Bu özellik, seçim kutusunun içinde görünen yer tutucu (placeholder) metnini belirler. getInput('phoneCodePlaceholder') fonksiyonu, muhtemelen bir çeviri veya dinamik değer döndürür ve yer tutucu olarak kullanılır.
+2. <ng-option> Elementi:
+*ngFor="let c of translatedCountries": Bu Angular yapısı, translatedCountries dizisindeki her bir öğe için bir <ng-option> elementi oluşturur. Yani, her ülke için bir seçenek gösterilir.
+[value]="c.guid": Bu, her bir seçenek için değer olarak c.guid'yi (muhtemelen ülkenin benzersiz kimliği) atar. Bu değer, seçim yapıldığında countryGuid'ye atanır.
+{{ c.name }} {{ c.phoneCode }}: Bu, her seçeneğin içinde görünen metni belirler. Seçenek, ülke adını (c.name) ve telefon kodunu (c.phoneCode) gösterir. Örneğin, "Türkiye +90" gibi bir seçenek.
+constructor(@Inject(PLATFORM_ID) private _platformId: Object) {}:
+constructor: Angular bileşenleri veya servisleri oluşturulurken çağrılan yapıcı fonksiyondur. Burada, sınıfın bir örneği oluşturulurken bazı bağımlılıklar inject edilmektedir.
+
+@Inject(PLATFORM_ID): Angular'da, bağımlılıkları doğrudan enjeksiyon yerine belirli bir token ile inject etmek için @Inject() dekoratörü kullanılır. Burada PLATFORM_ID Angular'ın özel bir token'ıdır ve bu token, çalıştırılan ortamı (platformu) temsil eder. Yani, Angular'ın uygulamanın hangi platformda çalıştığını bilmesini sağlar.
+
+PLATFORM_ID bir token'dır ve bu, hangi platformda çalışıldığını belirtir. Bu genellikle:
+Platform Browser: Tarayıcıda çalışıyorsa,
+Platform Server: Sunucuda çalışıyorsa,
+Platform Universal: Angular Universal (sunucu tarafı render) kullanıyorsa, vs.
+private _platformId: Object: Bu, _platformId isminde, Object türünde bir değişken tanımlar. Bu değişken, PLATFORM_ID'den inject edilen değeri tutar. private anahtar kelimesi, bu değişkenin sadece sınıf içinde erişilebilir olduğu anlamına gelir.
+
+Özet:
+Bu constructor, PLATFORM_ID sembolünü kullanarak Angular'ın çalıştığı platform hakkında bilgi alır.
+_platformId değişkeni, uygulamanın hangi platformda çalıştığını belirtir ve genellikle platforma özgü işlemler yapmak için kullanılır (örneğin, sunucu tarafı rendering veya belirli platform özelliklerine göre farklı davranışlar sergilemek için).
+Bu tür bir kullanım, platforma özel mantık yazılmasına olanak tanır ve özellikle Angular Universal gibi senaryolarda sunucu ve tarayıcı için farklı davranışlar sergilemek için faydalıdır.
+[clearable]="false": Bu özellik, seçim kutusunun "temizlenebilir" olup olmadığını belirler. Burada false olarak ayarlandığı için, kullanıcı seçim yaptıktan sonra kutudaki değeri temizleyemez. Yani, bir değer seçildikten sonra, bu değeri boşaltmak mümkün olmaz.
+
+[searchable]="true": Bu özellik, seçim kutusunun içinde arama yapılabilir olmasını sağlar. Kullanıcılar, uzun bir seçenek listesinde arama yaparak daha hızlı seçim yapabilir.
+
+[(ngModel)]="value": Bu, Angular'ın two-way data binding (çift yönlü veri bağlama) özelliğidir. Kullanıcı seçim yaptığında, seçilen değer value değişkenine atanır ve value değişkeninde yapılan değişiklikler de seçim kutusunda görünecektir. Yani, bu özellik seçim kutusunun veri ile bağlanmasını sağlar.
+
+[ngModelOptions]="{ standalone: true }": Bu özellik, ngModel'in standalone (bağımsız) olarak kullanılmasını sağlar. Bu, ngModel'in, Angular form yapıları dışında bağımsız bir şekilde çalışmasını ve veri bağlama işlevini yerine getirmesini sağlar.
+type="text":
+
+Bu, input alanının türünü belirtir. Burada text türü kullanıldığından, kullanıcı metin girebilir.
+[(ngModel)]="value":
+
+Bu, Angular’ın two-way data binding (iki yönlü veri bağlama) özelliğini kullanır. Yani, input alanındaki değer ile value değişkeni arasında otomatik olarak bir bağlantı kurulmuştur.
+Kullanıcı input'a bir değer girdiğinde, value değişkeni otomatik olarak güncellenir ve tersi de geçerlidir.
+(input)="reset($event)":
+
+(input) event'ı, kullanıcı input alanına her yazı yazdığında tetiklenir. Burada, reset($event) fonksiyonu çağrılır.
+Bu fonksiyon, genellikle kullanıcı yazarken yapılan işlemi (örneğin, değeri sıfırlamak veya başka bir işlem yapmak) kontrol etmek için kullanılır. $event değişkeni, input event’inin detaylarını taşır.
+[disabled]="disabled":
+
+Bu özellik, input alanının devre dışı olup olmadığını belirler. disabled değişkeni, dışarıdan bir değer alır ve input alanı bu değere göre etkin veya devre dışı olur.
+Eğer disabled true olarak ayarlanmışsa, input alanı devre dışı olur ve kullanıcı metin giremez.
+[ngModelOptions]="{ standalone: true }":
+
+Bu, ngModel'in standalone (bağımsız) olarak kullanılmasını sağlar.
+Yani, bu input alanı Angular form yapısının dışında bağımsız olarak çalışır. Bu, form denetimleri (form controls) dışında kullanıldığında faydalıdır.
+class="border-transparent focus:border-transparent focus:!ring-0 focus:outline-none w-full text-[#6E6E6E] h-[42px] bg-transparent":
+
+border-transparent: Input kutusunun kenarlığını şeffaf yapar.
+focus:border-transparent: Input odaklandığında (kullanıcı kutuya tıkladığında veya yazmaya başladığında) kenarlığını şeffaf yapar.
+focus:!ring-0: Odaklandığında (focus) herhangi bir "ring" (çevre çizgisi) eklenmesini engeller.
+focus:outline-none: Odaklanıldığında input'un etrafındaki outline'ı (çerçeve) kaldırır.
+w-full: Input alanının genişliğini %100 yapar, yani genişliği içinde bulunduğu alanın tamamını kaplar.
+text-[#6E6E6E]: Input içindeki metnin rengini #6E6E6E (gri) yapar.
+h-[42px]: Input alanının yüksekliğini 42 piksel yapar.
+bg-transparent: Input alanının arka planını şeffaf yapar.
+[placeholder]="section?.placeholder":
+
+Bu, input alanına bir yer tutucu (placeholder) metni ekler. section?.placeholder ifadesi, section nesnesinden placeholder özelliğini alır.
+? operatörü, optional chaining (isteğe bağlı zincirleme) kullanılarak section nesnesinin var olup olmadığını kontrol eder. Eğer section nesnesi yoksa, herhangi bir hata oluşmaz ve placeholder boş kalır.
+İşte Angular yaşam döngüsündeki ana aşamalar ve ilgili yaşam döngüsü kancaları:
+
+ngOnChanges:
+
+Bir bileşenin veya direktifin input özellikleri değiştiğinde çağrılır.
+ngOnInit:
+
+Bileşen veya direktif başlatıldığında, yani ilk kez DOM'a yerleştirildiğinde çağrılır.
+ngDoCheck:
+
+Angular'ın değişiklik algılama mekanizması dışında özel kontroller yapmak için kullanılır.
+ngAfterContentInit:
+
+Bileşenin içerik (content) ve çocuk bileşenleri DOM'a eklendikten sonra çağrılır.
+ngAfterContentChecked:
+
+İçerik değiştikçe her kontrol sonrası çağrılır.
+ngAfterViewInit:
+
+Bileşenin görsel görünümü ve çocuk bileşenleri DOM'a yerleştirildikten sonra çağrılır.
+ngAfterViewChecked:
+
+Görünüm değiştikçe her kontrol sonrası çağrılır.
+ngOnDestroy:
+
+Bileşen veya direktif yok edilmeden önce çağrılır. Bu, bileşen veya direktif DOM'dan kaldırıldığında son bir temizlik işlemi yapmanızı sağlar.
+u, bir SVG (Scalable Vector Graphics) öğesinin <path> elemanıdır. <path>, SVG çizimlerinde, çeşitli şekillerin tanımlanmasına ve çizilmesine yarayan bir etiket olup, genellikle karmaşık şekillerin oluşturulmasında kullanılır. Bu örnekteki <path> elemanı, belirli bir çizimi ifade eder.
+
+Özniteliklerin Açıklamaları:
+d="M27.3281 16.7617H28.6465V19.4009H27.3281V16.7617Z":
+
+Bu, path komutlarını içerir ve şeklin çizilmesini tanımlar. Burada, d (data) özniteliği, şeklin geometrisini ve hareketlerini belirtir.
+
+M27.3281 16.7617: Bu komut, çizimin başlangıç noktasını belirler. M, "move to" (git) komutudur ve belirtilen koordinatlara, yani x=27.3281 ve y=16.7617'ye hareket eder.
+
+H28.6465: H komutu, yatay doğrultuda hareketi belirtir. Burada x koordinatını 28.6465'e getirir, yani yatayda bir çizgi çizer.
+
+V19.4009: V komutu, dikey doğrultuda hareketi belirtir. Burada y koordinatını 19.4009'a getirir, yani dikey bir çizgi çizer.
+
+H27.3281: Yine bir yatay hareket komutudur. Bu sefer x koordinatını 27.3281'e getirir, yani sağdan sola doğru yatay bir çizgi çizer.
+
+V16.7617: Bu dikey hareket komutudur ve y koordinatını tekrar başlangıç noktası olan 16.7617'ye getirir, yani çizgiyi aşağıya doğru çizer.
+
+Z: Z komutu, çizimi kapatır, yani en son nokta ile ilk noktayı birleştirir ve şekli tamamlar.
+
+Bu komutlar sonucunda, belirli bir dikdörtgen şekli çizilmektedir. Başlangıç noktasından sağa, aşağıya, sola ve yukarıya doğru hareket edilerek, kapalı bir şekil elde edilir.
+
+fill="#E2B101":
+
+Bu öznitelik, path şeklinin içinin hangi renkle doldurulacağını belirtir. #E2B101 hexadecimal renk kodu, sarımsı bir altın rengini ifade eder. Yani, çizilen şekil bu renk ile doldurulacaktır.
+<rect x="4" y="4" width="48" height="48" rx="24" fill="#FEF0C7" />
+x="4":
+
+Dikdörtgenin sol üst köşesinin yatay koordinatını belirtir. Bu durumda, dikdörtgen 4 birim sağa yerleştirilmiştir.
+y="4":
+
+Dikdörtgenin sol üst köşesinin dikey koordinatını belirtir. Bu durumda, dikdörtgen 4 birim aşağıya yerleştirilmiştir.
+width="48":
+
+Dikdörtgenin genişliğini belirtir. Bu dikdörtgenin genişliği 48 birimdir.
+height="48":
+
+Dikdörtgenin yüksekliğini belirtir. Bu dikdörtgenin yüksekliği 48 birimdir.
+rx="24":
+
+Dikdörtgenin köşe yarıçapını belirtir. rx="24" değeri, köşelerin yuvarlatılacağına ve her köşe için 24 birimlik bir yarıçap kullanılacağına işaret eder. Bu, dikdörtgenin köşelerini yuvarlatan bir efekt oluşturur.
+fill="#FEF0C7":
+
+Dikdörtgenin iç rengini belirtir. #FEF0C7 hexadecimal renk kodu, çok açık bir sarı rengini ifade eder. Bu, dikdörtgenin iç kısmını bu renk ile doldurur.
+
+svg
+  width="80"
+  height="80"
+  viewBox="0 0 56 56"
+  class="pt-4"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+>
+width="80":
+
+SVG öğesinin genişliğini belirtir. Burada, SVG öğesinin genişliği 80 birim (piksel) olarak ayarlanmıştır. Yani, görüntü 80 piksel genişliğinde olacaktır.
+height="80":
+
+SVG öğesinin yüksekliğini belirtir. Burada, SVG öğesinin yüksekliği 80 birim (piksel) olarak ayarlanmıştır. Bu, görüntü 80 piksel yüksekliğinde olacaktır.
+viewBox="0 0 56 56":
+
+viewBox, SVG öğesinin görsel alanını tanımlar. 0 0 başlangıç koordinatlarını (x, y) belirtir. Burada, koordinatlar (0, 0) konumunda başlar.
+56 56, SVG'nin çizim alanının genişliğini ve yüksekliğini belirtir. Yani, 56x56 birimlik bir koordinat sistemi kullanılır ve bu sistemdeki çizimler SVG'ye uygun şekilde yerleştirilir.
+class="pt-4":
+
+Bu, SVG öğesinin dış stilini (CSS sınıfını) belirtir. pt-4, büyük olasılıkla CSS ile tanımlanmış bir sınıf olup, SVG öğesine 4 birimlik bir üst (padding-top) boşluk ekler. Bu, öğenin üst kısmında ekstra boşluk bırakmak için kullanılır. Ancak bu, yalnızca dış stil dosyasının tanımladığı kurallara göre işlev görür.
+fill="none":
+
+Bu özellik, SVG şekillerinin içinin hangi renk ile doldurulacağını belirler. none değeri, şeklin içinin boş olacağı anlamına gelir, yani iç kısmı şeffaf olur.
+xmlns="http://www.w3.org/2000/svg":
+
+Bu, SVG formatının doğru bir şekilde tanımlanabilmesi için gereken XML ad alanı bildirimi. Her SVG öğesinin bu XML ad alanına sahip olması gereklidir, böylece tarayıcılar SVG öğesinin doğru şekilde işleyebilir.
+
+
+
+
+
