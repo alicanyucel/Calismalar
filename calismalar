@@ -411,3 +411,112 @@ isPlatformBrowser(this._platformId): Kodu yalnızca tarayıcıda çalıştırmak
 this.subscriptions.add(...): Bileşenin yaşam döngüsü boyunca yapılan abonelikler takip edilir.
 this.memberService.member.subscribe(...): Kullanıcı üyelik bilgileri ile ilgili değişiklikleri takip eder ve this.user değişkenine atar.
 this.languageService.sectionData.subscribe(...): Dil veya içerik verilerini takip eder ve this.section ve this.applicationSection değişkenlerini günceller.
+ngOnInit(): void {
+  this.subscriptions.add(this.languageService.sectionData.subscribe((_: string) => {
+    this.section = this.languageService.getSection("homepage");
+    this.applicationSection = this.languageService.getSection("newApplication");
+  }));
+}
+1. ngOnInit(): void
+Bu metod, Angular bileşenlerinde bileşen başlatıldığında otomatik olarak çağrılır. void geri dönüş tipi, bu metodun herhangi bir değer döndürmediğini belirtir.
+ngOnInit genellikle bileşen başlatılmadan önce verilerin yüklenmesi veya başlatılması gibi işlemler için kullanılır.
+2. this.subscriptions.add(...)
+this.subscriptions bir Subscription nesnesi koleksiyonudur ve birden fazla observable'a abone olunduğunda bunları toplar.
+Bu koleksiyon, bileşenin yaşam döngüsü boyunca yapılan aboneliklerin doğru şekilde temizlenmesini sağlamak için kullanılır. add() metodu, yeni bir aboneliği mevcut abonelik listesine ekler.
+Bu şekilde, bileşen yok olduğunda (örneğin, kullanıcı sayfayı terk ettiğinde veya bileşen ömrü sona erdiğinde) tüm abonelikler ngOnDestroy metodunda unsubscribe() edilerek temizlenebilir.
+3. this.languageService.sectionData.subscribe(...)
+this.languageService.sectionData bir observable'dır. Bu observable, muhtemelen uygulamanın dil verisi veya içerik bölümleriyle ilgili bilgileri içeriyor.
+subscribe(...) metodu, bu observable'a abone olmanızı sağlar. Abone olduktan sonra, observable her değer güncellendiğinde verilen callback fonksiyonu çalıştırılır.
+Burada, (_: string) ifadesi, gelen verinin türünü belirtir (bu durumda bir string). Ancak, bu parametre kullanılamadığı için _ sembolü kullanılmıştır. Yani, gelen değeri burada kullanmıyoruz ama değerin geldiğini takip ediyoruz.
+4. this.languageService.getSection("homepage")
+this.languageService.getSection("homepage"): languageService servisi içinde tanımlanmış bir metottur. Bu metod, "homepage" başlığını kullanarak belirli bir içerik veya dil verisini alır.
+Bu içerik verisi, this.section değişkenine atanır. Bu, bileşenin anasayfası için gerekli verileri temsil edebilir.
+5. this.languageService.getSection("newApplication")
+this.languageService.getSection("newApplication"): Bu metod da, "newApplication" başlığına sahip dil verisini alır. Bu içerik, uygulamanın yeni başvuru sayfası için kullanılabilir.
+Bu veriler, this.applicationSection değişkenine atanır.
+Özet:
+Bu kod, bileşenin ngOnInit metodunda languageService servisine abone olur. Servisten dil veya içerik verilerini alır.
+sectionData observable'ı, dil veya içerik verisi değiştiğinde tetiklenir.
+getSection metodu ile "homepage" ve "newApplication" başlıklarına ait içerik verileri alınarak this.section ve this.applicationSection değişkenlerine atanır.
+Bu süreç, bileşen başlatıldığında içeriklerin doğru şekilde yüklenmesi için yapılır.
+Bu işlem, genellikle dil değişikliği veya içerik güncellemesi gibi dinamik verilerin kullanıldığı uygulamalarda kullanılır.
+<input
+  [value]="filterText"
+  [(ngModel)]="filterText"
+  [ngModelOptions]="{ standalone: true }"
+  type="text"
+  (input)="filterContent()"
+  class="border-transparent focus:border-transparent focus:!ring-0 focus:outline-none w-full text-[#1b1b1b] placeholder-[#BBBBBB] text-[14px] md:text-base h-[42px]"
+  [placeholder]="section?.searchPlaceholder"
+/>
+1. [value]="filterText":
+Bu, Angular property binding kullanarak input elemanının value özelliğine filterText değişkenini bağlar.
+filterText bir model veya bileşen değişkeni olabilir ve input alanının değerini tutar. Ancak burada yalnızca okuma (read-only) yapıldığı için, input elemanının değeri filterText ile güncellenmez, yalnızca görüntülenir.
+2. [(ngModel)]="filterText":
+Bu, two-way data binding sağlar. Angular'ın ngModel direktifi ile input alanındaki değer, filterText değişkeniyle çift yönlü bağlanır.
+Yani, input içindeki değer değiştiğinde filterText değişkeni de güncellenir ve filterText değişkeni değişirse, input alanındaki değer de buna göre güncellenir.
+3. [ngModelOptions]="{ standalone: true }":
+ngModelOptions özelliği, ngModel direktifinin çalışma şekli üzerinde kontrol sağlar.
+standalone: true ayarı, ngModel'i başka bir form elemanına bağlanmadan bağımsız olarak çalıştırmak için kullanılır. Bu, genellikle form elemanları dışında, tek başına çalışan ngModel'i kullanmak için gereklidir.
+4. type="text":
+type="text": Bu, input elemanının metin türünde olduğunu belirtir. Kullanıcı, burada yalnızca metin girebilir.
+5. (input)="filterContent()":
+(input): Bu, input elemanına her veri girişi yapıldığında input olayını dinler.
+filterContent(): Bu, her input olayında çağrılacak olan bir metottur. Bu metot, genellikle kullanıcının yazdığı metni filtreleme, arama yapma veya veriyi değiştirme gibi işlemleri içerir.
+6. class="...":
+Bu sınıf, input elemanına özel stil ve görsel ayarları uygular. İlgili sınıflar şunları içerir:
+border-transparent: Kenar çizgileri görünmez yapar.
+focus:border-transparent: Focus (tıklama) durumunda kenar çizgilerini gizler.
+focus:!ring-0: Focus (tıklama) durumunda outline (çevre halkası) yok eder.
+focus:outline-none: Focus durumunda outline'ı kaldırır.
+w-full: Elemanın genişliğini tam genişlik yapar.
+text-[#1b1b1b]: Yazı rengini koyu gri (#1b1b1b) yapar.
+placeholder-[#BBBBBB]: Placeholder metninin rengini gri (#BBBBBB) yapar.
+text-[14px]: Yazı boyutunu 14px yapar.
+md:text-base: Ekran boyutu md (orta boyut) veya daha büyük olduğunda yazı boyutunu base (genel varsayılan boyut) yapar.
+h-[42px]: Input alanının yüksekliğini 42px olarak ayarlar.
+7. [placeholder]="section?.searchPlaceholder":
+[placeholder]: Angular property binding ile placeholder metnini bağlar.
+section?.searchPlaceholder: section adlı nesnenin içinde searchPlaceholder özelliğine bakar. Eğer section nesnesi tanımlıysa, searchPlaceholder değeri input'un placeholder'ı olarak gösterilir. ?. operatörü, null veya undefined değerleri kontrol eder, yani section mevcut değilse hata almazsınız.
+<img
+  *ngIf="coverImageSrc2"
+  [ngSrc]="
+    environment.apiUrl +
+    '/file/get?mimeType=image/jpeg&fileName=' +
+    coverImageSrc2
+  "
+  priority
+  class="w-full h-full object-cover object-center absolute"
+  [class]="coverClass2"
+  width="1444"
+  height="678"
+  alt="e-Visa"
+/>
+1. *ngIf="coverImageSrc2":
+*ngIf: Bu, Angular'ın yapısal bir direktifidir ve belirli bir koşula bağlı olarak öğeyi DOM'a ekler veya çıkarır.
+coverImageSrc2: coverImageSrc2 adlı bileşen değişkeni burada kullanılır. Eğer coverImageSrc2 değeri truthy (doğru değeri) ise, yani tanımlı ve geçerli bir değere sahipse, bu <img> elemanı DOM'a eklenir ve gösterilir. Eğer coverImageSrc2 değeri false, null veya undefined gibi bir falsy değere sahipse, bu <img> elemanı gösterilmez.
+2. [ngSrc]="...":
+[ngSrc]: Angular'ın özel ngSrc binding özelliği, src özniteliği için gelişmiş bir bağlama sağlar. Bu, Angular'ın src ile ilgili veri yükleme stratejisini optimize etmek için kullanılır. Normalde, src değeri doğrudan bağlanırken, ngSrc ile bağlantı yapıldığında, Angular, src değerinin doğru şekilde yerleşmesini sağlamak için daha kontrollü bir yöntem sunar.
+Bağlama ifadesi:
+typescript
+Kodu kopyala
+environment.apiUrl + '/file/get?mimeType=image/jpeg&fileName=' + coverImageSrc2
+Bu, environment.apiUrl ile başlayan bir URL oluşturur. Bu URL, bir API'ye istek göndermek için kullanılacak ve API'den coverImageSrc2 adlı dosya ismini alarak bir JPEG görseli almayı amaçlar. coverImageSrc2 burada dosya adını temsil eder.
+environment.apiUrl: Genellikle bir yapılandırma dosyasından (örneğin, environment.ts dosyasından) alınan API'nin temel URL'si.
+/file/get?mimeType=image/jpeg&fileName=: Görüntüyü almak için kullanılacak API yoludur.
+coverImageSrc2: Görüntü dosyasının adı. Bu değer dinamik olarak bileşende belirlenir.
+3. priority:
+Bu, HTML5'in yeni bir özelliği olup, görüntünün öncelikli yüklenmesini belirtir. priority etiketi, sayfa yüklendiğinde bu görselin hızlıca yüklenmesi gerektiğini belirtir. Bu özellik, genellikle sayfa ilk açıldığında kritik olan görseller için kullanılır.
+4. class="w-full h-full object-cover object-center absolute":
+w-full: Görselin genişliğini tam (full) genişlik yapar.
+h-full: Görselin yüksekliğini tam (full) yükseklik yapar.
+object-cover: Görselin, container (kapsayıcı) elemanının boyutlarına uyacak şekilde kesilmeden tam olarak yerleştirilmesini sağlar. Görüntü oranını koruyarak kapsayıcıyı doldurur.
+object-center: Görselin merkezde konumlanmasını sağlar.
+absolute: Görselin konumunun mutlak (absolute) olması gerektiğini belirtir. Yani, üstteki ve soldaki referans noktalarına göre konumlanır.
+5. [class]="coverClass2":
+[class]: Bu, Angular'ın class binding özelliğidir. coverClass2 değişkeninin değerine göre bir sınıf (CSS sınıfı) dinamik olarak eklenir veya çıkarılır.
+coverClass2: Bu, bileşende tanımlı bir değişken olup, input değerine göre farklı CSS sınıflarını elemanın sınıf listesine ekler.
+6. width="1444" ve height="678":
+Bu, görselin genişlik ve yükseklik özelliklerini belirler. Görselin boyutları 1444x678 piksel olarak sabitlenmiş.
+7. alt="e-Visa":
+alt: Görselin alternatif metnini belirtir. Eğer görsel yüklenemezse veya görseli göremeyen bir kullanıcı varsa, bu metin görsel yerine gösterilir. Burada "e-Visa" yazısı kullanılmış.
