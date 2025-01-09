@@ -520,3 +520,1229 @@ coverClass2: Bu, bileşende tanımlı bir değişken olup, input değerine göre
 Bu, görselin genişlik ve yükseklik özelliklerini belirler. Görselin boyutları 1444x678 piksel olarak sabitlenmiş.
 7. alt="e-Visa":
 alt: Görselin alternatif metnini belirtir. Eğer görsel yüklenemezse veya görseli göremeyen bir kullanıcı varsa, bu metin görsel yerine gösterilir. Burada "e-Visa" yazısı kullanılmış.
+
+// Language service.ts
+import { isPlatformServer } from "@angular/common"; // Angular platformunu kontrol etmek için kullanılan fonksiyon
+import { Inject, Injectable, PLATFORM_ID } from "@angular/core"; // Dependency Injection için kullanılan sınıflar
+import { BehaviorSubject } from "rxjs"; // Reactive programming için kullanılacak veri akışları
+import { StorageService } from "./storage.service"; // LocalStorage ile ilgili servis
+
+@Injectable({
+  providedIn: "root", // Bu servisi Angular'ın root modülünde sağlayacağımızı belirtir
+})
+export class LanguageService {
+  // Şu anda kullanılan dilin kodu (örn. "en" için İngilizce)
+  public currentLanguageCode: BehaviorSubject<string> =
+    new BehaviorSubject<string>("en");
+
+  // Şu anda kullanılan dilin adı (örn. "English" için İngilizce)
+  public currentLanguageName: BehaviorSubject<string> =
+    new BehaviorSubject<string>("English");
+
+  constructor(
+    private storageService: StorageService, // LocalStorage'ı yöneten servis
+    @Inject(PLATFORM_ID) private _platformId: Object // Platform kimliğini almak için kullanılır (tarayıcı mı, sunucu mu?)
+  ) {
+    // LocalStorage'dan dil ayarlarını alıyoruz ve sayfa dilini buna göre ayarlıyoruz
+    const localStorageData = storageService.getLocalStorage(); // LocalStorage'dan veri al
+    if (localStorageData && localStorageData.localization) {
+      this.currentLanguageCode.next(
+        JSON.parse(localStorageData.localization)?.code ?? "en"
+      ); // Dil kodunu ayarla
+      this.currentLanguageName.next(
+        JSON.parse(localStorageData.localization)?.name ?? "English"
+      ); // Dil adını ayarla
+      document
+        .querySelector("html")
+        ?.setAttribute(
+          "dir",
+          JSON.parse(localStorageData.localization)?.rtl ? "rtl" : "ltr"
+        ); // Yazı yönünü ayarla (sağdan sola ya da soldan sağa)
+    }
+  }
+
+  // Başlık verisini tutmak için kullanılan BehaviorSubject
+  public headerText: BehaviorSubject<string> = new BehaviorSubject<string>("");
+
+  // Dil çevirisi için kullanılacak veri
+  public sectionData: BehaviorSubject<any> = new BehaviorSubject<any[]>([]);
+
+  // Tercüme edilen veri
+  public translateData: any[] = [];
+  
+  // Dil bölüm verisi
+  sections: any[] = [];
+
+  // Dil değiştirme fonksiyonu
+  changeLanguage(languageCode: string, languageName: string, rtl: boolean) {
+    rtl = languageCode.toLowerCase() == "ar"; // Eğer dil Arapça ise, yazı yönünü sağdan sola ayarla
+    this.storageService.setLocalStorage(
+      "localization", // LocalStorage'a dil ayarlarını kaydet
+      JSON.stringify({
+        code: languageCode, // Dil kodu
+        name: languageName, // Dil adı
+        rtl: rtl, // Yazı yönü (Arapça için sağdan sola)
+      })
+    );
+    this.currentLanguageCode.next(languageCode); // Dil kodunu güncelle
+    this.currentLanguageName.next(languageName); // Dil adını güncelle
+    document.querySelector("html")?.setAttribute("dir", rtl ? "rtl" : "ltr"); // Sayfa dilini ayarla
+    if (this.sections == null) return;
+    this.setSectionData(this.sections); // Sayfa içeriğini güncelle
+  }
+
+  // Belirli bir belge tipini almak için kullanılan fonksiyon
+  getAdditionalDocumentTypes() {
+    const guid = "13571426-0489-453d-bcc6-624783830cbd"; // Belirli bir belge tipi için GUID
+    return this.translateData.filter(
+      (x) =>
+        x.guidKey == guid && // Belirli GUID'ye göre filtrele
+        this.currentLanguageCode.value.toLowerCase() == x.language // Aktif dil ile eşleşen çeviriyi al
+    );
+  }
+
+  // Boş değerleri İngilizce değerlerle doldurur
+  fillEmptyValuesWithEnglish(target: any, source: any) {
+    for (let i = 0; i < Object.keys(target).length; i++) {
+      const obj = target[Object.keys(target)[i]]; // Hedef objedeki eleman
+      const srcObj = source[Object.keys(target)[i]]; // Kaynak objedeki eleman
+      if (typeof obj === "object" && typeof srcObj === "object") {
+        this.fillEmptyValuesWithEnglish(obj, srcObj); // Rekürsif olarak alt objelere bak
+      } else {
+        if (obj == "" || obj == null) {
+          target[Object.keys(target)[i]] = source[Object.keys(target)[i]]; // Boş veya null olan değerleri kaynak değerle doldur
+        }
+      }
+    }
+  }
+
+  // Dil verilerini ayarlamak için kullanılan fonksiyon
+  setSectionData(sections: any[]) {
+    this.sections = sections; // Bölüm verilerini sakla
+    for (
+      let i = 0;
+      i <
+      this.sections.filter((x) => JSON.parse(x.content)?.lang != "en").length;
+      i++
+    ) {
+      const section = this.sections.filter(
+        (x) => JSON.parse(x.content)?.lang != "en"
+      )[i]; // Dil "en" (İngilizce) olmayan bölümleri al
+      const sectionEn = this.sections.find(
+        (x) =>
+          JSON.parse(x.content)?.lang == "en" &&
+          x.sectionHandle == section.sectionHandle
+      ); // Aynı bölümün İngilizce versiyonunu bul
+      const targetJson = JSON.parse(section.content); // Hedef bölüm verisini JSON'a çevir
+      if (sectionEn?.content) {
+        const sourceJson = JSON.parse(sectionEn.content); // İngilizce bölüm verisini JSON'a çevir
+        this.fillEmptyValuesWithEnglish(targetJson?.data, sourceJson?.data); // Eksik verileri İngilizce ile doldur
+        this.sections.filter((x) => JSON.parse(x.content)?.lang != "en")[i].content = JSON.stringify(targetJson); // Veriyi güncelle
+      }
+    }
+    this.sectionData.next(this.sections); // Güncellenmiş veriyi yayınla
+  }
+
+  // Tercüme verisini ayarlamak için kullanılan fonksiyon
+  setTranslateData(sections: any[]) {
+    this.translateData = sections; // Tercüme verisini sakla
+  }
+
+  // Belirli bir bölüm verisini almak için kullanılan fonksiyon
+  getSection(name: string) {
+    const section = this.sectionData?.value?.find(
+      (x: any) =>
+        x.sectionHandle == name && // Bölüm adıyla eşleşen veriyi bul
+        JSON.parse(x.content ?? "[]")?.lang == this.currentLanguageCode.value.toLowerCase() // Dil kodu ile eşleşen veriyi bul
+    );
+    return section ? JSON.parse(section.content)?.data : null; // Bölüm verisini döndür
+  }
+
+  // Birden fazla bölümü almak için kullanılan fonksiyon
+  getSections(name: string) {
+    const sections = this.sectionData?.value.filter(
+      (x: any) =>
+        x.sectionHandle == name && // Bölüm adıyla eşleşen verileri filtrele
+        JSON.parse(x.content ?? "[]")?.lang == this.currentLanguageCode.value.toLowerCase() // Dil kodu ile eşleşen verileri filtrele
+    );
+    return sections ?? []; // Bölümleri döndür
+  }
+
+  // Form elemanları için dil çevirisini almak
+  getInput(key: string) {
+    if (isPlatformServer(this._platformId)) // Eğer sunucuda çalışıyorsak, boş değer döndür
+      return { label: "", placeholder: "" };
+    const sectionName = "form_elements"; // Form elemanları bölümü
+    let section = this.sectionData?.value.find(
+      (x: any) =>
+        x.sectionHandle == sectionName &&
+        JSON.parse(x.content ?? "[]")?.lang == this.currentLanguageCode.value.toLowerCase()
+    ); // Form elemanları bölümünü bul
+    if (!section)
+      section = this.sectionData?.value.find(
+        (x: any) =>
+          x.sectionHandle == sectionName &&
+          JSON.parse(x.content ?? "[]")?.lang == "en"
+      ); // Eğer mevcut dilde bulunmazsa İngilizceyi bul
+
+    if (!section) {
+      return {
+        label: "", // Eğer bölüm bulunamazsa boş değer döndür
+        placeholder: "",
+      };
+    }
+    return JSON.parse(section.content)?.data[key]; // Çevirisini döndür
+  }
+
+  // GUID ile çeviri almak
+  getTranslation(guid: string) {
+    const translation = this.translateData.find(
+      (x) =>
+        x.language == this.currentLanguageCode.value.toLowerCase() && // Aktif dil ile eşleşen çeviriyi bul
+        x.guidKey == guid // Belirtilen GUID ile eşleşen çeviriyi bul
+    );
+    if (translation) return translation.value; // Çeviriyi döndür
+
+    const original = this.translateData.find(
+      (x) => x.language == "en" && x.guidKey == guid // Eğer dilde bulunmazsa, İngilizceyi bul
+    );
+    if (original) return original.value; // İngilizce çeviriyi döndür
+
+    return ""; // Çeviri bulunamazsa boş döndür
+  }
+
+  // API hata mesajlarını almak
+  getError(name: string) {
+    const messages: any[] = this.getSection("api_messages"); // API mesajlarını al
+    const messagesDict = [
+      { key: "EMAIL_VERIFY", value: "emailVerify" },
+      { key: "USER_NOT_FOUND", value: "userNotFound" },
+      { key: "USERNAME_OR_PASSWORD_ERROR", value: "usernameOrPasswordError" },
+      { key: "OLD_PASSWORD_INCORRECT", value: "oldPasswordIncorrect" },
+      { key: "APPLICATION_GROUP_NOT_FOUND", value: "applicationGroupNotFound" },
+      {
+        key: "CAPTCHA_ERROR_INCORRECT_CODE",
+        value: "captchaErrorIncorrectCode",
+      },
+      { key: "PASSWORD_POLICY_VIOLATION", value: "passwordControl" },
+      { key: "ONGOING_PAYMENT_CHARGE", value: "ongoingPayment" },
+      { key: "required", value: "required" },
+      { key: "invalid", value: "invalid" },
+    ];
+    const key = messagesDict.find((x) => x.key == name)?.value ?? ""; // Hata mesajını eşleştir
+    if (messages) {
+      if (Object.keys(messages).indexOf(key) != -1)
+        return Object.values(messages)[Object.keys(messages).indexOf(key)];
+      if (Object.keys(messages).indexOf(name) != -1)
+        return Object.values(messages)[Object.keys(messages).indexOf(name)];
+    }
+    return name; // Eğer mesaj bulunmazsa, ismi döndür
+  }
+
+  // Belirli bir condition'ı (koşulu) almak
+  getCondition(id: string) {
+    const messages: any[] = this.getSection("conditions")?.conditions;
+    if (messages?.find((x) => x.conditionId == id.toString()))
+      return messages?.find((x) => x.conditionId == id.toString()).translation;
+    return null; // Eğer koşul bulunmazsa, null döndür
+  }
+
+  // Koşul çevirisini almak
+  getConditionTranslation(condition: any) {
+    const translation = condition?.translateDtos?.find(
+      (x: any) => x.language == this.currentLanguageCode.value.toLowerCase() // Aktif dildeki çeviriyi al
+    );
+    if (translation) return translation.value;
+
+    const original = condition?.translateDtos?.find(
+      (x: any) => x.language == "en" // İngilizce çeviriyi al
+    );
+    if (original) return original.value;
+  }
+
+  // Milliyet çevirisini almak
+  public getNationality(nationality: string) {
+    const messages: any[] = this.getSection("nationalities")?.nationalities;
+    if (messages?.find((x) => x.key == nationality))
+      return messages?.find((x) => x.key == nationality).translation;
+
+    return nationality; // Eğer milliyet bulunamazsa, kendi değerini döndür
+  }
+
+  // Vize tipi çevirisini almak
+  public getVisaType(visaType: string) {
+    const messages: any[] = this.getSection("visaTypes")?.visaTypes;
+    if (messages?.find((x) => x.key == visaType))
+      return messages?.find((x) => x.key == visaType).translation;
+
+    return visaType; // Eğer vize tipi bulunamazsa, kendi değerini döndür
+  }
+
+  // Uçuş bilgisi çevirisini almak
+  public getFlightInformation(flightInformation: string) {
+    const messages: any[] =
+      this.getSection("flight_information")?.flightInformations;
+    if (messages?.find((x) => x.key == flightInformation))
+      return messages?.find((x) => x.key == flightInformation).translation;
+
+    return flightInformation; // Eğer uçuş bilgisi bulunamazsa, kendi değerini döndür
+  }
+
+  // Seyahat belgesi çevirisini almak
+  public getTravelDocument(travelDocument: string) {
+    const messages: any[] =
+      this.getSection("travel_documents")?.travelDocuments;
+    if (messages?.find((x) => x.key == travelDocument))
+      return messages?.find((x) => x.key == travelDocument).translation;
+
+    return travelDocument; // Eğer seyahat belgesi bulunamazsa, kendi değerini döndür
+  }
+
+  // Ek belge çevirisini almak
+  public getAdditionalDocuments(additionalDoc: string) {
+    const messages: any[] = this.getSection(
+      "additional_documents"
+    )?.additionalDocuments;
+    if (messages?.find((x) => x.key == additionalDoc))
+      return messages?.find((x) => x.key == additionalDoc).translation;
+
+    return additionalDoc; // Eğer ek belge bulunamazsa, kendi değerini döndür
+  }
+
+  // Cinsiyet çevirisini almak
+  public getGender(gender: string) {
+    const messages: any[] = this.getSection("genders")?.genders;
+    if (messages?.find((x) => x.key == gender))
+      return messages?.find((x) => x.key == gender).translation;
+
+    return gender; // Eğer cinsiyet bulunamazsa, kendi değerini döndür
+  }
+
+  // Vize durumu çevirisini almak
+  getVisaStatus(status: string) {
+    const messages: any[] =
+      this.getSection("profile")?.applications?.visaStatus;
+    if (Object.keys(messages ?? {})?.indexOf(status) != -1)
+      return Object.values(messages)[Object.keys(messages).indexOf(status)];
+    return status; // Eğer vize durumu bulunamazsa, kendi değerini döndür
+  }
+}
+///////////
+Login component ts
+import { isPlatformBrowser } from "@angular/common"; // Tarayıcıda çalışıp çalışmadığını kontrol etmek için kullanılan fonksiyon
+import { HttpClient } from "@angular/common/http"; // HTTP isteği yapmak için kullanılan servis
+import {
+  AfterViewInit,
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Inject,
+  OnDestroy,
+  OnInit,
+  PLATFORM_ID,
+} from "@angular/core"; // Angular'ın temel modüllerinden ilgili sınıflar
+import { FormBuilder, FormGroup } from "@angular/forms"; // Form oluşturmak için kullanılan araçlar
+import { Title } from "@angular/platform-browser"; // Sayfa başlığını değiştirmek için kullanılan servis
+import { ActivatedRoute, Router } from "@angular/router"; // Yönlendirme ve parametreleri almak için
+import { Subscription } from "rxjs"; // Observable aboneliklerini yönetmek için
+import { environment } from "../../../environment/environment"; // Çevresel değişkenler
+import { SpinnerService } from "../../components/spinner/spinner.service"; // Yükleniyor göstergesi (spinner) servisi
+import { LanguageService } from "../../shared/language.service"; // Dil servisi
+import { MemberService } from "../../shared/member.service"; // Üye hizmeti
+
+// Error tipini tanımlıyoruz
+interface Error {
+  email: string; // E-posta hatası
+  password: string; // Şifre hatası
+}
+
+@Component({
+  selector: "app-login", // Bileşenin HTML tag'ı
+  templateUrl: "./login.component.html", // Bu bileşenin HTML template'i
+})
+export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
+  constructor(
+    private spinnerService: SpinnerService, // Yükleniyor göstergesi için servis
+    private route: ActivatedRoute, // Aktif route üzerinden parametreler almak için
+    private router: Router, // Sayfa yönlendirmeleri için
+    private fb: FormBuilder, // Form oluşturmak için
+    private memberService: MemberService, // Üye servisi
+    private languageService: LanguageService, // Dil servisi
+    private titleService: Title, // Sayfa başlığı için
+    private httpClient: HttpClient, // HTTP istekleri için
+    private cdr: ChangeDetectorRef, // Angular değişiklik tespitini tetiklemek için
+    @Inject(PLATFORM_ID) private _platformId: Object // Platform kimliğini almak için (tarayıcı mı yoksa sunucu mu?)
+  ) { }
+
+  private subscriptions = new Subscription(); // Aktif aboneliklerin yönetileceği nesne
+
+  section: any; // Sayfa verisi (login bölümüne ait veriler)
+  loginErrorModal = false; // Giriş hatası modal'ını kontrol etmek için
+  showMissingInformation = false; // Eksik bilgi uyarısını göstermek için
+  missingErrors: any[] = []; // Eksik bilgilerle ilgili hata mesajları
+  passwordHidden = true; // Şifreyi gizlemek/göstermek için
+
+  environment = environment; // Çevresel değişkenler
+  returnUrl: string | undefined; // Başka bir sayfaya yönlendirme için kullanılan URL
+  loginForm: FormGroup | undefined; // Form verilerini tutacak form grubu
+  showVerifiedModal = false; // Hesap doğrulama modal'ı için
+
+  // Varsayılan kimlik bilgileri
+  defaultAuth: any = {
+    email: "",
+    password: "",
+  };
+
+  errors: Error = {
+    password: "", // Şifre hatası mesajı
+    email: "", // E-posta hatası mesajı
+  };
+
+  error: string | null = null; // Genel hata mesajı
+
+  // ngAfterViewInit - Bileşen görünümünü oluşturduktan sonra çalışacak olan fonksiyon
+  ngAfterViewInit(): void { }
+
+  // ngOnDestroy - Bileşen yok olduğunda çalışacak olan fonksiyon
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe(); // Abonelikleri temizliyoruz
+  }
+
+  // ngOnInit - Bileşen başlatıldığında çalışacak olan fonksiyon
+  ngOnInit(): void {
+    // Eğer platform tarayıcıysa (Sunucu tarafı render edilmez)
+    if (isPlatformBrowser(this._platformId)) {
+      const token = this.route.snapshot.paramMap.get("token"); // URL parametrelerinden token alıyoruz
+      if (token) {
+        // Eğer token varsa, üyeyi doğrulamak için API çağrısı yapıyoruz
+        this.httpClient
+          .get(`${environment.apiUrl}/member/verify/${token}`)
+          .subscribe((user: any) => {
+            this.memberService.setLocalStorage(user); // Üye verilerini localStorage'a kaydediyoruz
+            this.showVerifiedModal = true; // Doğrulama modal'ını gösteriyoruz
+          });
+      } else {
+        // Eğer token yoksa, üye verilerini kontrol ediyoruz
+        this.subscriptions.add(this.memberService.member.subscribe((member) => {
+          if (member) this.router.navigate(["/profile"]); // Eğer üye varsa, profile sayfasına yönlendiriyoruz
+        }));
+      }
+
+      // Dil verisini almak için 'languageService' üzerinden abone oluyoruz
+      this.subscriptions.add(this.languageService.sectionData.subscribe(() => {
+        this.section = this.languageService.getSection("login"); // "login" bölümünü alıyoruz
+        if (!this.section) return; // Eğer bölüm bulunmazsa, işlem yapmıyoruz
+        this.titleService.setTitle(this.section.og.title); // Sayfa başlığını güncelliyoruz
+        this.spinnerService.display(false); // Yükleniyor göstergesini kapatıyoruz
+      }));
+
+      // Yönlendirilmesi gereken URL'yi alıyoruz
+      this.returnUrl =
+        this.route.snapshot.queryParams["returnUrl".toString()] || "/"; // Eğer yönlendirme URL'si varsa onu al, yoksa ana sayfaya git
+    }
+  }
+
+  // Kullanıcıdan gelen hataları kontrol eden fonksiyon
+  hasError() {
+    return Object.values(this.errors).find((x: string) => x != ""); // Eğer herhangi bir hata varsa true döner
+  }
+
+  // Dil verisini almak için kullanılan fonksiyon
+  getInput(key: string) {
+    return this.languageService.getInput(key); // 'key' ile eşleşen çeviriyi döndürür
+  }
+
+  // Giriş işlemini yapan fonksiyon
+  submit() {
+    this.missingErrors = []; // Hata listelerini sıfırlıyoruz
+    if (this.defaultAuth.email == "") {
+      // Eğer e-posta boşsa, hata mesajı ekliyoruz
+      this.missingErrors.push(this.getInput("email")?.label);
+      this.errors.email = "required"; // E-posta hatası
+    }
+    if (this.defaultAuth.password == "") {
+      // Eğer şifre boşsa, hata mesajı ekliyoruz
+      this.missingErrors.push(this.getInput("password")?.label);
+      this.errors.password = "required"; // Şifre hatası
+    }
+    if (this.hasError()) {
+      // Eğer hata varsa, eksik bilgi uyarısını gösteriyoruz
+      this.showMissingInformation = true;
+      return;
+    }
+
+    // Giriş işlemi için spinner'ı gösteriyoruz
+    this.spinnerService.display(true);
+    this.memberService
+      .login(this.defaultAuth.email, this.defaultAuth.password) // Giriş işlemi için API çağrısı yapıyoruz
+      .subscribe({
+        next: (v) => {
+          // Başarılı girişte, üye verilerini localStorage'a kaydedip, profile sayfasına yönlendiriyoruz
+          this.memberService.setLocalStorage(v);
+          this.router.navigate(["/profile"]);
+          //this.spinnerService.display(false); // Yükleniyor göstergesini kapatıyoruz
+        },
+        error: (e) => {
+          // Hata oluşursa, hata mesajını alıp modal'ı gösteriyoruz
+          this.error = this.languageService.getError(e.error.message);
+          this.loginErrorModal = true;
+          this.spinnerService.display(false); // Yükleniyor göstergesini kapatıyoruz
+          this.cdr.detectChanges(); // Değişiklik tespiti
+        },
+        complete: () => { }, // Tamamlandığında herhangi bir işlem yapmıyoruz
+      });
+  }
+}
+////////////
+contact component ts 
+
+import { isPlatformBrowser } from "@angular/common";
+import { HttpClient } from "@angular/common/http";
+import {
+  ChangeDetectorRef,
+  Component,
+  Inject,
+  OnDestroy,
+  OnInit,
+  PLATFORM_ID,
+} from "@angular/core";
+import { DomSanitizer, Title } from "@angular/platform-browser";
+import { AsYouType } from "libphonenumber-js";
+import { Subscription } from "rxjs";
+import { environment } from "../../../environment/environment";
+import { SpinnerService } from "../../components/spinner/spinner.service";
+import { LanguageService } from "../../shared/language.service";
+import { MemberService } from "../../shared/member.service";
+// form verileri Error isimli interfaceden geliyor
+interface Error {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  conditions: string;
+  message: string;
+  captcha: string;
+}
+@Component({
+  selector: "app-contact",
+  templateUrl: "./contact.component.html",
+})
+export class ContactComponent implements OnInit, OnDestroy {
+  constructor(
+    private spinnerService: SpinnerService,
+    private memberService: MemberService,
+    private httpClient: HttpClient,
+    private sanitizer: DomSanitizer,
+    private languageService: LanguageService,
+    private titleService: Title,
+    @Inject(PLATFORM_ID) private _platformId: Object,
+    private cdr: ChangeDetectorRef
+  ) { }
+  private subscriptions = new Subscription();
+
+  numbersOnlyValidator(event: any) {
+    const pattern = /^[0-9\-]*$/; // regular expression
+    if (!pattern.test(event.target.value)) {
+      //input alanına girilen değer pattern ile uyumlumu 
+      event.target.value = event.target.value.replace(/[^0-9\-]/g, "");
+    }
+  }
+
+  refreshCaptcha() {
+    //tarayıcda calsııyorsa true sunucuda çalısıyorsa false doner
+    if (isPlatformBrowser(this._platformId)) {
+      this.httpClient
+      // blog binry veri veya görselmiş
+        .get<Blob>(environment.apiUrl + "/contact/getcaptcha", {
+          responseType: "blob" as "json", //http yanıtı sonucu bir blog binay veri captcha için
+          observe: "response", // ceavı bana headders ve body olarak al
+        })
+        .subscribe((resp) => {
+          this.captchaId = resp.headers.get("X-Captcha-Id")?.toString() ?? "";
+          let objectURL = URL.createObjectURL(resp.body!); // blob verisini bir geçici URL'ye dönüştürür. Bu URL, görselin tarayıcıda gösterilmesini sağlar.
+          this.captchaData = this.sanitizer.bypassSecurityTrustUrl(objectURL); //url yi güvenli bir url olarak işaretler
+        });
+    }
+  }
+  errors: Error = {
+    firstName: "",
+    lastName: "",
+    email: "",
+    phoneNumber: "",
+    conditions: "",
+    message: "",
+    captcha: "",
+  };
+  translatedNationalities: any = [];
+  nationalities$: any;
+
+  errorPopup = false;
+  successPopup = false;
+
+  conditions = false;
+  conditionModal = false;
+  section: any;
+  user: any = null;
+  environment = environment;
+  captchaId = "";
+  captchaData: any;
+  captchaCode = "";
+  member: any;
+  name = "";
+  surname = "";
+  email = "";
+  phone = "";
+  message = "";
+  nation: any;
+  getErrorMessage(key: string) {
+    return this.languageService.getError(key);
+  }
+  ngOnInit(): void {
+    // Eğer platform tarayıcıysa, kodu çalıştır (Sunucu tarafı render sırasında bu kısım çalışmaz)
+    if (isPlatformBrowser(this._platformId)) {
+      
+      // 'languageService' üzerinden dil verilerini alıyoruz. 'sectionData' bir Observable.
+      this.subscriptions.add(this.languageService.sectionData.subscribe(() => {
+        
+        // "contact" sekmesini almak için dil servisinden veri çekiyoruz
+        this.section = this.languageService.getSection("contact");
+  
+        // Eğer section bulunmazsa, fonksiyonu erken sonlandırıyoruz
+        if (!this.section) return;
+  
+        // section verisi varsa, başlık bilgisi set ediliyor
+        if (this.section) this.titleService.setTitle(this.section.og.title);
+  
+        // Eğer 'nationalities$' (uluslararası veriler) varsa, verileri işle
+        if (this.nationalities$) {
+          this.translatedNationalities = []; // Yeni bir boş dizi başlatıyoruz
+          
+          // 'nationalities$' dizisinde döngüye girip her bir ulus için çeviri ekliyoruz
+          for (let nation of this.nationalities$) {
+            this.translatedNationalities.push({
+              guid: nation.guid, // Her ulusun benzersiz kimliği
+              name: this.languageService.getTranslation(nation.guid), // Çevrilen ulus adı
+              phoneCode: nation.phoneCode, // Telefon kodu
+            });
+          }
+        }
+  
+        // Ulusları isme göre sıralıyoruz
+        this.translatedNationalities = this.translatedNationalities.sort(
+          (x: any, y: any) => ("" + x.name).localeCompare(y.name)
+        );
+  
+        // 'memberService' üzerinden üye verisini alıyoruz ve spinner'ı durduruyoruz
+        this.memberService.member.subscribe((member) => {
+          this.user = member; // Üye verisi
+          this.member = member; // Üye verisi
+          this.spinnerService.display(false); // Yükleniyor spinner'ını gizle
+        });
+      }));
+  
+      // CAPTCHA verisini almak için bir HTTP isteği gönderiyoruz
+      this.httpClient
+        .get<Blob>(environment.apiUrl + "/contact/getcaptcha", {
+          responseType: "blob" as "json", // Yanıt tipi olarak 'blob' (ikili veri) belirliyoruz
+          observe: "response", // Tam yanıt objesini almak istiyoruz
+        })
+        .subscribe((resp) => {
+          // CAPTCHA ID'sini başlıklardan alıyoruz
+          this.captchaId = resp.headers.get("X-Captcha-Id")?.toString() ?? "";
+  
+          // CAPTCHA'nın verilerini URL'e dönüştürüp güvenli hale getiriyoruz
+          let objectURL = URL.createObjectURL(resp.body!);
+          this.captchaData = this.sanitizer.bypassSecurityTrustUrl(objectURL);
+        });
+  
+      // Ulusal kimlik listesine dair bir HTTP isteği yapıyoruz
+      this.httpClient
+        .get(
+          `${environment.apiUrl
+          }/nationality/list?isTurkiye=true&timestamp=${new Date().getTime()}`
+        )
+        .subscribe((data: any) => {
+          // 'nationalities$' verisini alıyoruz
+          this.nationalities$ = data.data;
+          
+          // Eğer veriler geldiyse, her bir ulus için çeviri işlemi yapıyoruz
+          if (this.nationalities$) {
+            for (let nation of this.nationalities$) {
+              this.translatedNationalities.push({
+                guid: nation.guid, // Her ulusun benzersiz kimliği
+                name: this.languageService.getTranslation(nation.guid), // Çevrilen ulus adı
+                phoneCode: nation.phoneCode, // Telefon kodu
+              });
+            }
+  
+            // Çevrilen ulusları isme göre sıralıyoruz
+            this.translatedNationalities = this.translatedNationalities.sort(
+              (x: any, y: any) => ("" + x.name).localeCompare(y.name)
+            );
+          }
+        });
+    }
+  }
+  
+  ngOnDestroy(): void {
+    // Bileşen yok olurken tüm abonelikleri temizliyoruz
+    this.subscriptions.unsubscribe();
+  }
+  
+  getInput(key: string) {
+    // Ana dil servisi üzerinden verilen 'key' parametresinin çevirisini alıyoruz
+    return this.languageService.getInput(key);
+  }
+  
+  checkConditions() {
+    // Koşulların geçerliliğini kontrol ediyoruz
+    this.conditions = !this.conditions; // Koşulların geçerliliğini tersine çeviriyoruz
+    if (this.conditions) this.conditionModal = true; // Eğer geçerli ise, modal'ı açıyoruz
+    this.errors.conditions = ""; // Hata mesajını sıfırlıyoruz
+  }
+  
+  hasError() {
+    // Eğer hatalar varsa, herhangi bir hata mesajını döndürüyoruz
+    return Object.values(this.errors).find((x: string) => x != "");
+  }
+  
+  
+  validateEmail() {
+    const validRegex =
+      /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
+
+      // verilen ifade ile eşleşmediiyse ve null ise invalid hatası göndr
+    if (!this.email.match(validRegex) && this.errors.email == "") {
+      this.errors.email = "invalid";
+    }
+  }
+// .input(event.target.value) ifadesi, event.target.value (kullanıcının form alanına yazdığı değer) ile telefon numarasını alır ve bu değeri, AsYouType sınıfının input fonksiyonu ile işleyerek, doğru biçimlendirilmiş telefon numarasını döndürür.
+//Bu sonuç, this.phone değişkenine atanır. Böylece, biçimlendirilmiş telefon numarası sınıfın bir özelliği olarak saklanır.
+  asYouType(event: any) {
+    this.phone = new AsYouType().input(event.target.value);
+    this.cdr.detectChanges();
+  }
+
+  send() {
+    // veriler boşsa onları required olarak uyartıyor
+    if (this.name == "") this.errors.firstName = "required";
+    if (this.surname == "") this.errors.lastName = "required";
+    if (this.phone == "") this.errors.phoneNumber = "required";
+    if (this.email == "") this.errors.email = "required";
+    if (!this.conditions) this.errors.conditions = "required";
+    if (this.message == "") this.errors.message = "required";
+    if (this.captchaCode == "") this.errors.captcha = "required";
+    this.validateEmail();
+
+    if (this.hasError()) return;
+
+    this.spinnerService.display(true);// loading simgesi göstermek için
+    this.httpClient
+      .post(environment.apiUrl + "/contact/send", {
+        // gönderilecek parametreler
+        captchaGuid: this.captchaId,
+        captchaCode: this.captchaCode,
+        email: this.email,
+        message: this.message,
+        name: this.name,
+        phone: "string",
+        surname: this.surname,
+      })
+      .subscribe({
+        // v obsersavble tarafından dondurulen veriyi temsil eder
+        next: (v: any) => {
+          // değerleri sıfırlıyor
+          this.name = "";
+          //degerleri sıfırlıyor
+          this.surname = "";
+          //degerleri sıfırlıyor
+          this.email = "";
+          //degerleri sıfırlıyor
+          this.phone = "";
+          //degerleri sıfırlıyor
+          this.conditions = false;
+          this.message = "";
+          //degerleri sıfırlıyor
+          this.spinnerService.display(false); // yükleme simgesini gizle
+          if (v.success) this.successPopup = true; // veri başarılı bir şekilde geliyorsa başarı popupu
+          else this.errorPopup = true;  //başrısız ise eroor popupu aç
+          this.refreshCaptcha();   // captchayı yenile
+        },
+        //  hata varsa apiden gelen veride hata varsa veya istek yapılamadıysa
+        error: (e) => {
+          // hata mesajı captca error incorrerct code ise
+          if (e.error?.message == "CAPTCHA_ERROR_INCORRECT_CODE") {
+            this.errors.captcha = "invalid"; // gerçersiz ata
+          } else this.errorPopup = true; // başka b,r hata varsa
+          this.refreshCaptcha();
+          this.spinnerService.display(false); // loading kısmını kapat
+        },
+        complete: () => { }, // işlem bittiğinde birşey yapma 
+      });
+  }
+}
+
+//////////////
+faq component ts 
+import { Component, Inject, OnDestroy, OnInit, PLATFORM_ID } from "@angular/core"; // Angular core modüllerini ve 'PLATFORM_ID' platform bilgisi için import ediyoruz
+import { Title } from "@angular/platform-browser"; // Sayfa başlığını değiştirebilmek için 'Title' servisini import ediyoruz
+import { SpinnerService } from "../../components/spinner/spinner.service"; // Yükleniyor göstergesi (spinner) için 'SpinnerService' servisini import ediyoruz
+import { LanguageService } from "../../shared/language.service"; // Dil hizmeti için 'LanguageService' servisini import ediyoruz
+import { Subscription } from "rxjs"; // RxJS'ten Subscription, observable abonelikleri için kullanılıyor
+
+@Component({
+  selector: "app-faq", // Bileşenin HTML tag'ı
+  templateUrl: "./faq.component.html", // Bu bileşenin HTML template'i
+})
+export class FaqComponent implements OnInit, OnDestroy {
+  // Bileşen içindeki gerekli servisler constructor aracılığıyla inject ediliyor
+  constructor(
+    private languageService: LanguageService, // Dil servisi
+    private titleService: Title, // Başlık servisi
+    private spinnerService: SpinnerService, // Spinner servisi (yükleniyor göstergesi)
+  ) { }
+
+  private subscriptions = new Subscription(); // Bileşenin aktif aboneliklerini tutan bir Subscription nesnesi
+
+  section: any; // FAQ (Sıkça Sorulan Sorular) bölümü verisini tutacak değişken
+  filterText = ""; // Arama için kullanılacak metin
+  selectedIndex = 0; // Seçili olan soruyu belirten indeks
+  filteredContent: any; // Filtrelenmiş içeriği tutacak değişken
+
+  // ngOnInit - Bileşen başlatıldığında çalışacak kod
+  ngOnInit() {
+    this.spinnerService.display(true); // Sayfa yükleniyor göstergesini aktif ediyoruz
+    this.subscriptions.add(this.languageService.sectionData.subscribe(() => {
+      // 'languageService.sectionData' observable'ına abone oluyoruz ve veriler değiştiğinde işlem yapıyoruz
+      this.section = this.languageService.getSection("faq"); // 'faq' bölümü verisini alıyoruz
+
+      if (!this.section) return; // Eğer 'faq' bölümü yoksa, işlemden çıkıyoruz
+
+      this.filterContent(); // İçeriği filtreliyoruz
+      this.titleService.setTitle(this.section.og.title); // Sayfa başlığını güncelliyoruz
+      this.spinnerService.display(false); // Yükleniyor göstergesini kapatıyoruz
+    }));
+  }
+
+  // ngOnDestroy - Bileşen yok olduğunda çalışacak kod
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe(); // Bileşen yok olurken, tüm aktif abonelikleri sonlandırıyoruz
+  }
+
+  // setSelectedIndex - Seçilen soruyu belirlemek için
+  setSelectedIndex(index: number) {
+    // Eğer aynı soru seçildiyse, açmayı/kapatmayı sağlıyoruz
+    this.selectedIndex = this.selectedIndex == index ? -1 : index;
+  }
+
+  // filterContent - Arama metnine göre içeriği filtreleyen fonksiyon
+  filterContent() {
+    var items: any = []; // Filtrelenmiş içerikleri tutacak geçici bir dizi oluşturuyoruz
+
+    for (let i = 0; i < this.section?.content?.length; i++) { 
+      // 'faq' bölümündeki tüm içerikleri döngü ile kontrol ediyoruz
+      const item = this.section?.content[i]; // Her bir öğeyi alıyoruz
+
+      // Arama metni (filterText) için bir RegExp (düzenli ifade) oluşturuyoruz
+      const regex = new RegExp(
+        `(${this.filterText.replace(/e/, "e[-]?")})`, // 'e' harfini 'e' ya da 'e-' şeklinde esnek yapıyoruz
+        "gi" // 'g' global (tüm metin içinde) ve 'i' büyük/küçük harfe duyarsız
+      );
+
+      let found = false; // Filtreli metin bulunup bulunmadığını takip eden değişken
+      // Yanıt metnini HTML etiketlerini koruyarak filtreliyoruz
+      const highlightedAnswer = item?.answer.replace(
+        /(<[^>]*>|[^<]*)/g, // HTML etiketleri dışındaki metni bul
+        (match: any) => {
+          if (match.startsWith("<")) return match; // Eğer HTML etiketi ise, olduğu gibi bırakıyoruz
+          const newText = match.replace(regex, (m: any) => {
+            found = true; // Eğer arama metni bulunduysa, 'found' değişkenini true yapıyoruz
+            return `<span style="background-color: yellow;">${m}</span>`; // Bulunan metni vurguluyoruz
+          });
+          return newText;
+        }
+      );
+
+      // Soru metnini de benzer şekilde filtreliyoruz
+      const highlightedQuestion = item?.question?.replace(
+        regex,
+        (match: any) => {
+          return `<span class="highlight">${match}</span>`; // Soru metnindeki eşleşmeleri vurguluyoruz
+        }
+      );
+
+      // Eğer arama metni boş değilse veya filtreli içerik varsa, öğeyi filtrelenmiş içerik listesine ekliyoruz
+      if (
+        this.filterText == "" ||
+        this.filterText == null ||
+        item?.question
+          ?.replaceAll("-", "")
+          .toLowerCase()
+          .includes(this.filterText.toLowerCase()) || // Soru metninde arama metni varsa
+        found // Yanıt kısmında arama metni bulunduysa
+      ) {
+        items.push({
+          question: highlightedQuestion, // Vurgulanan soru metni
+          answer: highlightedAnswer, // Vurgulanan yanıt metni
+        });
+      }
+    }
+
+    // Filtrelenmiş içeriği güncelliyoruz
+    this.filteredContent = items;
+  }
+}
+////////////////////////////
+
+register component ts 
+import { isPlatformBrowser } from "@angular/common"; // Tarayıcı ortamında çalışıp çalışmadığını kontrol eder
+import { HttpClient } from "@angular/common/http"; // HTTP istekleri yapabilmek için kullanılan servis
+import {
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Inject,
+  OnDestroy,
+  OnInit,
+  PLATFORM_ID
+} from "@angular/core"; // Angular bileşenleri ve yaşam döngüsü metodları için gerekli importlar
+import { DomSanitizer, Title } from "@angular/platform-browser"; // HTML güvenlik işlemleri ve sayfa başlığını ayarlamak için kullanılan servisler
+import { Router } from "@angular/router"; // Angular yönlendirme işlemleri için kullanılan servis
+import { Subscription } from "rxjs"; // Observable aboneliklerini yönetmek için
+import { environment } from "../../../environment/environment"; // Uygulama çevresel ayarları (API URL, vb.)
+import { SpinnerService } from "../../components/spinner/spinner.service"; // Yükleniyor göstergesi (spinner) servis
+import { LanguageService } from "../../shared/language.service"; // Dil servisi
+import { MemberService } from "../../shared/member.service"; // Üye işlemleri için servis
+
+// Formda kullanılacak hataları tanımlayan interface
+interface Error {
+  firstName: string;
+  lastName: string;
+  birthday: string;
+  nationality: string;
+  gender: string;
+  email: string;
+  password: string;
+  captcha: string;
+}
+
+@Component({
+  selector: "app-register", // Bileşenin HTML tag'ı
+  templateUrl: "./register.component.html", // Bu bileşenin HTML şablonu
+})
+export class RegisterComponent implements OnInit, OnDestroy {
+  constructor(
+    private cdr: ChangeDetectorRef, // Değişiklik tespiti için
+    private router: Router, // Yönlendirme işlemleri için
+    private httpClient: HttpClient, // HTTP istekleri için
+    private sanitizer: DomSanitizer, // Güvenlik önlemi almak için
+    private memberService: MemberService, // Üye işlemleri için servis
+    public languageService: LanguageService, // Dil servisi
+    private titleService: Title, // Sayfa başlığını değiştirmek için
+    @Inject(PLATFORM_ID) private _platformId: Object, // Hangi platformda çalıştığımızı belirlemek için
+    private spinnerService: SpinnerService // Yükleniyor göstergesi (spinner) için servis
+  ) { }
+
+  private subscriptions = new Subscription(); // Aboneliklerin yönetilmesi için
+
+  environment = environment; // Çevresel değişkenler
+
+  // CAPTCHA verisini yenileyen metod
+  refreshCaptcha() {
+    this.member.captchaCode = ""; // CAPTCHA kodunu sıfırlıyoruz
+
+    // Yeni CAPTCHA verisi almak için API isteği gönderiyoruz
+    this.httpClient
+      .get<Blob>(environment.apiUrl + "/captcha/getcaptcha", {
+        responseType: "blob" as "json",
+        observe: "response",
+      })
+      .subscribe((resp) => {
+        this.captchaId = resp.headers.get("X-Captcha-Id")?.toString() ?? ""; // CAPTCHA ID'sini alıyoruz
+        let objectURL = URL.createObjectURL(resp.body!); // CAPTCHA resmini oluşturuyoruz
+        this.captchaData = this.sanitizer.bypassSecurityTrustUrl(objectURL); // Güvenli URL oluşturuyoruz
+        this.cdr.detectChanges(); // Değişiklik tespiti yapıyoruz
+      });
+  }
+
+  loginErrorModal = false; // Giriş hatası modal'ı durumu
+  minBirthday = new Date(1900, 1, 1); // Doğum tarihi için minimum tarih
+  today = new Date(); // Bugünün tarihi
+  section: any; // Sayfaya ait dil verisi
+  nationalities: any; // Ülkeler listesi
+  translatedNationalities: any = []; // Çevrilmiş ülkeler
+  country = ""; // Ülke bilgisi
+  missingErrors: any = []; // Eksik bilgi hataları
+  showMissingInformation = false; // Eksik bilgi uyarısını göster
+  member: any = { // Üye bilgileri
+    captchaCode: "",
+    nationalityGuid: null,
+    name: "",
+    secondName: "",
+    lastName: "",
+    eMail: "",
+    phone: "",
+    address: "",
+    birthDay: "",
+    motherName: "",
+    fatherName: "",
+    password: "",
+    isEMailVerification: false,
+    status: true,
+    gender: null,
+  };
+  
+  // Hataları tanımlıyoruz
+  errors: Error = {
+    firstName: "",
+    lastName: "",
+    birthday: "",
+    nationality: "",
+    gender: "",
+    email: "",
+    password: "",
+    captcha: "",
+  };
+
+  userExistsModal = false; // Kullanıcı zaten var hatası modal'ı
+  registeredModal = false; // Kayıt başarılı modal'ı
+  error: null | string = null; // Genel hata mesajı
+  reloadEvent: EventEmitter<boolean> = new EventEmitter(); // Sayfa yenileme olayı
+  captchaId = ""; // CAPTCHA ID'si
+  captchaData: any; // CAPTCHA verisi
+  submitted = false; // Form gönderilip gönderilmediğini kontrol eder
+
+  // ngOnInit - Bileşen başlatıldığında çalışacak fonksiyon
+  ngOnInit(): void {
+    if (isPlatformBrowser(this._platformId)) { // Eğer platform tarayıcı ise çalışacak kod
+      // Dil verisini almak ve başlığı ayarlamak için abone oluyoruz
+      this.subscriptions.add(this.languageService.sectionData.subscribe(() => {
+        this.section = this.languageService.getSection("register");
+        if (!this.section) return;
+        this.titleService.setTitle(this.section.og.title); // Sayfa başlığını ayarlıyoruz
+        this.spinnerService.display(false); // Spinner'ı kapatıyoruz
+
+        this.translatedNationalities = []; // Çevrilmiş ulkeler listesini sıfırlıyoruz
+        if (this.nationalities) {
+          // Ülkeler listesini çeviriyoruz
+          for (let nation of this.nationalities) {
+            this.translatedNationalities.push({
+              guid: nation.guid,
+              name: this.languageService.getTranslation(nation.guid),
+            });
+          }
+        }
+      }));
+
+      // Ülkeler listesini alıyoruz
+      this.httpClient
+        .get(
+          `${environment.apiUrl
+          }/nationality/list?timestamp=${new Date().getTime()}`
+        )
+        .subscribe((data: any) => {
+          this.nationalities = data.data; // Ülkeler verisini alıyoruz
+          this.translatedNationalities = []; // Çevrilmiş ülkeler listesini sıfırlıyoruz
+          if (this.nationalities) {
+            // Çevrilmiş ülkeler listesini dolduruyoruz
+            for (let nation of this.nationalities) {
+              this.translatedNationalities.push({
+                guid: nation.guid,
+                name: this.languageService.getTranslation(nation.guid),
+              });
+            }
+          }
+        });
+
+      // Kullanıcı bilgilerini kontrol ediyoruz (zaten giriş yapmışsa, anasayfaya yönlendiriyoruz)
+      this.subscriptions.add(this.memberService.member.subscribe((member) => {
+        if (member) this.router.navigate(["/"]);
+      }));
+
+      // CAPTCHA resmini alıyoruz
+      this.httpClient
+        .get<Blob>(environment.apiUrl + "/captcha/getcaptcha", {
+          responseType: "blob" as "json",
+          observe: "response",
+        })
+        .subscribe((resp) => {
+          this.captchaId = resp.headers.get("X-Captcha-Id")?.toString() ?? ""; // CAPTCHA ID'sini alıyoruz
+          let objectURL = URL.createObjectURL(resp.body!); // CAPTCHA görselini oluşturuyoruz
+          this.captchaData = this.sanitizer.bypassSecurityTrustUrl(objectURL); // Güvenli URL oluşturuyoruz
+        });
+    }
+  }
+
+  // ngOnDestroy - Bileşen yok olduğunda çalışacak fonksiyon
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe(); // Tüm abonelikleri iptal ediyoruz
+  }
+
+  // Formdaki dil verilerini almak için kullanılan metod
+  getInput(key: string) {
+    return this.languageService.getInput(key);
+  }
+
+  // Cinsiyet çevirisi için kullanılan metod
+  getGender(key: string) {
+    return this.languageService.getGender(key);
+  }
+
+  // Şifre doğrulama metodunu yazıyoruz
+  validatePassword() {
+    const symbolRegex = /[.!#$%&'*+/=?^_`{|}~-]/;
+    const lowerCaseRegex = /[a-z]/;
+    const upperCaseRegex = /[A-Z]/;
+    const digitRegex = /[0-9]/;
+    
+    // Şifrenin belirli kurallara uymasını kontrol ediyoruz
+    if (
+      !this.member.password.match(symbolRegex) ||
+      !this.member.password.match(lowerCaseRegex) ||
+      !this.member.password.match(upperCaseRegex) ||
+      !this.member.password.match(digitRegex) ||
+      this.member.password.length < 8
+    ) {
+      if (this.errors.password == "") {
+        this.errors.password = "invalid"; // Geçersiz şifre hatası
+        this.missingErrors.push(this.getInput("password")?.label); // Eksik bilgi hatasına şifreyi ekliyoruz
+      }
+    }
+  }
+
+  // E-posta doğrulama metodunu yazıyoruz
+  validateEmail() {
+    const validRegex = /\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*/;
+    if (!this.member.eMail.match(validRegex) && this.errors.email == "") {
+      this.errors.email = "invalid"; // Geçersiz e-posta hatası
+      this.missingErrors.push(this.getInput("email")?.label); // Eksik bilgi hatasına e-posta bilgisini ekliyoruz
+    }
+  }
+
+  // Form hatalarını kontrol eden metod
+  hasError() {
+    // Gerekli alanlar eksikse hata mesajlarını ekliyoruz
+    if (this.member.name == "") {
+      this.errors.firstName = "required";
+      this.missingErrors.push(this.getInput("firstName")?.label); // Eksik isim hatası
+    }
+    if (this.member.birthDay == "") {
+      this.missingErrors.push(this.getInput("birthday")?.label); // Eksik doğum tarihi hatası
+      this.errors.birthday = "required";
+    }
+    if (
+      this.member.nationalityGuid == "" ||
+      this.member.nationalityGuid == null
+    ) {
+      this.errors.nationality = "required"; // Eksik ulus hatası
+      this.missingErrors.push(this.getInput("nationality")?.label);
+    }
+    if (this.member.gender == "" || this.member.gender == null) {
+      this.missingErrors.push(this.getInput("gender")?.label); // Eksik cinsiyet hatası
+      this.errors.gender = "required";
+    }
+    if (this.member.eMail == "") {
+      this.missingErrors.push(this.getInput("email")?.label); // Eksik e-posta hatası
+      this.errors.email = "required";
+    } else this.validateEmail(); // E-posta doğrulama
+    if (this.member.password == "") {
+      this.missingErrors.push(this.getInput("password")?.label); // Eksik şifre hatası
+      this.errors.password = "required";
+    } else this.validatePassword(); // Şifre doğrulama
+    if (this.member.captchaCode == "") {
+      this.missingErrors.push(this.getInput("captcha")?.label); // Eksik CAPTCHA hatası
+      this.errors.captcha = "required";
+    }
+    return Object.values(this.errors).find((x: string) => x != "");
+  }
+
+  // Hata mesajlarını almak için kullanılan metod
+  getErrorMessage(key: string) {
+    return this.languageService.getError(key);
+  }
+
+  // Formu göndermek için kullanılan metod
+  nextStep() {
+    this.missingErrors = []; // Eksik bilgi hatalarını sıfırlıyoruz
+    if (this.hasError()) {
+      this.showMissingInformation = true; // Hata varsa uyarıyı gösteriyoruz
+      return;
+    }
+    this.member.surname = this.member.lastName; // Soyadı bilgisini eşliyoruz
+    this.member.captchaGuid = this.captchaId; // CAPTCHA ID'sini ekliyoruz
+    this.spinnerService.display(true); // Spinner'ı açıyoruz
+    // API isteği ile üyeyi ekliyoruz
+    this.httpClient
+      .post(
+        environment.apiUrl + "/member/add",
+        {
+          ...this.member,
+          lang: this.languageService.currentLanguageCode.value, // Dil bilgisini ekliyoruz
+        },
+        {
+          responseType: "text", // Yanıt tipini metin olarak alıyoruz
+        }
+      )
+      .subscribe({
+        next: (v) => {
+          this.refreshCaptcha(); // CAPTCHA'yı yeniliyoruz
+          this.captchaData = ""; // CAPTCHA verisini sıfırlıyoruz
+          this.cdr.detectChanges(); // Değişiklikleri algılıyoruz
+          this.httpClient
+            .get<Blob>(environment.apiUrl + "/captcha/getcaptcha", {
+              responseType: "blob" as "json",
+              observe: "response",
+            })
+            .subscribe((resp) => {
+              this.member.captchaCode = ""; // CAPTCHA kodunu sıfırlıyoruz
+              this.captchaId =
+                resp.headers.get("X-Captcha-Id")?.toString() ?? ""; // CAPTCHA ID'sini alıyoruz
+              let objectURL = URL.createObjectURL(resp.body!); // CAPTCHA görselini oluşturuyoruz
+              this.captchaData =
+                this.sanitizer.bypassSecurityTrustUrl(objectURL); // Güvenli URL oluşturuyoruz
+              this.cdr.detectChanges(); // Değişiklikleri algılıyoruz
+            });
+
+          this.registeredModal = true; // Kayıt başarılı mesajını gösteriyoruz
+          this.spinnerService.display(false); // Spinner'ı kapatıyoruz
+
+          this.cdr.detectChanges(); // Değişiklikleri algılıyoruz
+        },
+        error: (e) => {
+          this.refreshCaptcha(); // CAPTCHA'yı yeniliyoruz
+          this.member.captchaCode = ""; // CAPTCHA kodunu sıfırlıyoruz
+          this.captchaData = ""; // CAPTCHA görselini sıfırlıyoruz
+          this.httpClient
+            .get<Blob>(environment.apiUrl + "/captcha/getcaptcha", {
+              responseType: "blob" as "json",
+              observe: "response",
+            })
+            .subscribe((resp) => {
+              this.captchaId =
+                resp.headers.get("X-Captcha-Id")?.toString() ?? ""; // CAPTCHA ID'sini alıyoruz
+              let objectURL = URL.createObjectURL(resp.body!); // CAPTCHA görselini oluşturuyoruz
+              this.captchaData =
+                this.sanitizer.bypassSecurityTrustUrl(objectURL); // Güvenli URL oluşturuyoruz
+            });
+
+          const errorMessage = this.languageService.getError(
+            JSON.parse(e.error)?.message
+          ); // Hata mesajını alıyoruz
+          this.spinnerService.display(false); // Spinner'ı kapatıyoruz
+          if (errorMessage == "ENTER_VALID_EMAIL") {
+            this.errors.email = "invalid"; // Geçersiz e-posta hatası
+            this.missingErrors.push(this.getInput("email")?.label); // Eksik e-posta hatasını ekliyoruz
+            this.spinnerService.display(false); // Spinner'ı kapatıyoruz
+            return;
+          } else if (errorMessage == "RECORD_ALREADY_ADDED") {
+            this.userExistsModal = true; // Kullanıcı zaten var hatasını gösteriyoruz
+            return;
+          }
+          this.error = errorMessage; // Hata mesajını saklıyoruz
+          this.showMissingInformation = true; // Eksik bilgi hatasını gösteriyoruz
+        },
+        complete: () => { }, //işlem bittiğinde ....
+      });
+  }
+}
+
